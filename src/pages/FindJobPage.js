@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/FindJobPage.css';
 
 // SVG Icons components
@@ -46,48 +47,30 @@ const FilterSidebar = ({
   setShowFilters, 
   filters, 
   toggleFilter, 
-  handleSalaryRangeChange, 
+  handleSalaryRangeChange,
+  setQuickSalaryRange,
   applyFilters, 
   clearFilters,
   searchTerm,
   setSearchTerm,
   location,
-  setLocation
+  setLocation,
+  hasFilterChanges
 }) => {
-  // State nội bộ để quản lý việc chọn Radio Salary
-  const [selectedSalaryOption, setSelectedSalaryOption] = React.useState('Custom');
-
-  // Danh sách các khoảng lương cố định
-  const salaryPresets = [
-    { label: '$10 - $100', min: 10, max: 100 },
-    { label: '$100 - $1,000', min: 100, max: 1000 },
-    { label: '$1,000 - $10,000', min: 1000, max: 10000 },
-    { label: '$10,000 - $100,000', min: 10000, max: 100000 },
-    { label: '$100,000 Up', min: 100000, max: 200000 },
-  ];
-
   // Tính toán % để vẽ thanh màu xanh
   const maxLimit = 200000;
   const getPercent = (value) => Math.round(((value) / maxLimit) * 100);
   const minPercent = getPercent(filters.salaryRange.min);
   const maxPercent = getPercent(filters.salaryRange.max);
 
-  // Xử lý khi chọn Radio Preset
-  const handleRadioChange = (preset) => {
-    if (preset === 'Custom') {
-      setSelectedSalaryOption('Custom');
-    } else {
-      setSelectedSalaryOption(preset.label);
-      handleSalaryRangeChange('min', preset.min);
-      setTimeout(() => handleSalaryRangeChange('max', preset.max), 0);
-    }
+  // Kiểm tra salary range có hợp lệ không
+  const isSalaryRangeValid = () => {
+    if (filters.salaryRange.max === 0) return true; // Chưa điền thì OK
+    return filters.salaryRange.min < filters.salaryRange.max;
   };
 
-  // Xử lý khi kéo Slider -> Tự động chuyển sang Custom
-  const handleSliderInput = (type, value) => {
-    setSelectedSalaryOption('Custom');
-    handleSalaryRangeChange(type, value);
-  };
+  // Kiểm tra có thể apply không
+  const canApply = hasFilterChanges && isSalaryRangeValid();
 
   // Helper render Active Filter Tag
   const renderActiveTag = (label, onRemove, prefix = '') => (
@@ -213,88 +196,65 @@ const FilterSidebar = ({
           </div>
         </div>
 
-        {/* --- 2. SALARY SECTION (MỚI) --- */}
+        {/* Salary Range Section */}
         <div className="filter-section">
-          <div className="salary-header">
-            <h4>Salary (yearly)</h4>
+          <h4>Salary Range (yearly)</h4>
+          
+          {/* Quick Select Buttons */}
+          <div className="salary-quick-select">
+            <button 
+              className="quick-btn"
+              onClick={() => setQuickSalaryRange(0, 30000)}
+            >
+              &lt; $30k
+            </button>
+            <button 
+              className="quick-btn"
+              onClick={() => setQuickSalaryRange(30000, 50000)}
+            >
+              $30k - $50k
+            </button>
+            <button 
+              className="quick-btn"
+              onClick={() => setQuickSalaryRange(50000, 80000)}
+            >
+              $50k - $80k
+            </button>
+            <button 
+              className="quick-btn"
+              onClick={() => setQuickSalaryRange(80000, 120000)}
+            >
+              $80k - $120k
+            </button>
+            <button 
+              className="quick-btn"
+              onClick={() => setQuickSalaryRange(120000, 200000)}
+            >
+              $120k+
+            </button>
           </div>
 
-          <div className="salary-range-container">
-            {/* Thanh Slider Đôi */}
-            <div className="multi-range-slider">
-              {/* Thanh nền xám */}
-              <div className="slider-track-bg"></div>
-              
-              {/* Thanh active màu xanh */}
-              <div 
-                className="slider-track-active" 
-                style={{
-                  left: `${minPercent}%`,
-                  width: `${maxPercent - minPercent}%`
-                }}
-              ></div>
-
-              {/* Input Min */}
+          {/* Custom Range Inputs */}
+          <div className="salary-simple-container">
+            <div className="salary-simple-inputs">
               <input 
-                type="range" 
-                min="0" max={maxLimit} step="1000"
-                value={filters.salaryRange.min}
-                onChange={(e) => {
-                  const val = Math.min(Number(e.target.value), filters.salaryRange.max - 1000);
-                  handleSliderInput('min', val);
-                }}
-                className="range-input"
-                style={{ zIndex: filters.salaryRange.min > maxLimit - 10000 ? 5 : 3 }} 
+                type="number" 
+                min="0"
+                placeholder="Min"
+                value={filters.salaryRange.min || ''}
+                onChange={(e) => handleSalaryRangeChange('min', e.target.value)}
+                className="salary-simple-input"
               />
-
-              {/* Input Max */}
+              <span className="salary-separator">-</span>
               <input 
-                type="range" 
-                min="0" max={maxLimit} step="1000"
-                value={filters.salaryRange.max}
-                onChange={(e) => {
-                  const val = Math.max(Number(e.target.value), filters.salaryRange.min + 1000);
-                  handleSliderInput('max', val);
-                }}
-                className="range-input"
-                style={{ zIndex: 4 }}
+                type="number" 
+                min="0"
+                placeholder="Max"
+                value={filters.salaryRange.max || ''}
+                onChange={(e) => handleSalaryRangeChange('max', e.target.value)}
+                className="salary-simple-input"
               />
-            </div>
-            
-            {/* Hiển thị giá trị text Min - Max */}
-            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '15px', fontSize: '13px', color: '#666'}}>
-              <span>Min: ${filters.salaryRange.min.toLocaleString()}</span>
-              <span>Max: ${filters.salaryRange.max.toLocaleString()}</span>
-            </div>
-
-            {/* Danh sách Radio Buttons */}
-            <div className="salary-options">
-              {salaryPresets.map((preset, index) => (
-                <label key={index} className="custom-radio-label">
-                  <input 
-                    type="radio" 
-                    name="salary" 
-                    className="custom-radio-input"
-                    checked={selectedSalaryOption === preset.label}
-                    onChange={() => handleRadioChange(preset)}
-                  />
-                  <div className="radio-circle"></div>
-                  <span>{preset.label}</span>
-                </label>
-              ))}
-
-              {/* Nút Custom */}
-              <label className="custom-radio-label">
-                <input 
-                  type="radio" 
-                  name="salary" 
-                  className="custom-radio-input"
-                  checked={selectedSalaryOption === 'Custom'}
-                  onChange={() => handleRadioChange('Custom')}
-                />
-                <div className="radio-circle"></div>
-                <span>Custom</span>
-              </label>
+              <span className="salary-unit">USD</span>
             </div>
           </div>
         </div>
@@ -307,7 +267,12 @@ const FilterSidebar = ({
 
       {/* Footer actions cố định ở dưới */}
       <div className="filter-actions">
-        <button className="btn-apply" onClick={applyFilters} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+        <button 
+          className="btn-apply" 
+          onClick={applyFilters}
+          disabled={!canApply}
+          style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}
+        >
           <span>Apply Filter</span>
         </button>
         <button className="btn-clear" onClick={clearFilters}>
@@ -319,6 +284,7 @@ const FilterSidebar = ({
 };
 
 const FindJobPage = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
   const [jobData, setJobData] = useState([]);
@@ -327,7 +293,7 @@ const FindJobPage = () => {
   
   // Filter states
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     industry: [],
     jobType: [],
     contractType: [],
@@ -337,7 +303,9 @@ const FindJobPage = () => {
       max: 200000
     },
     remoteJob: false
-  });
+  };
+  const [filters, setFilters] = useState(initialFilters);
+  const [hasFilterChanges, setHasFilterChanges] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [hoveredJob, setHoveredJob] = useState(null);
@@ -434,6 +402,7 @@ const FindJobPage = () => {
           : [...currentArray, value]
       };
     });
+    setHasFilterChanges(true);
   }, []);
 
   const handleSalaryRangeChange = useCallback((type, value) => {
@@ -441,9 +410,18 @@ const FindJobPage = () => {
       ...prev,
       salaryRange: {
         ...prev.salaryRange,
-        [type]: parseInt(value)
+        [type]: parseInt(value) || 0
       }
     }));
+    setHasFilterChanges(true);
+  }, []);
+
+  const setQuickSalaryRange = useCallback((min, max) => {
+    setFilters(prev => ({
+      ...prev,
+      salaryRange: { min, max }
+    }));
+    setHasFilterChanges(true);
   }, []);
 
   const handlePresetClick = useCallback((min, max) => {
@@ -454,7 +432,15 @@ const FindJobPage = () => {
   }, []);
 
   const applyFilters = useCallback(() => {
+    // Validate salary range
+    if (filters.salaryRange.min >= filters.salaryRange.max && filters.salaryRange.max > 0) {
+      alert('Khoảng lương tối đa phải lớn hơn khoảng lương tối thiểu!');
+      return;
+    }
+    
     setCurrentPage(1);
+    setShowFilters(false);
+    setHasFilterChanges(false);
     fetchJobs({ 
       search: searchTerm, 
       location: location,
@@ -463,18 +449,9 @@ const FindJobPage = () => {
   }, [searchTerm, location, filters]);
 
   const clearFilters = useCallback(() => {
-    setFilters({
-      industry: [],
-      jobType: [],
-      contractType: [],
-      level: [],
-      salaryRange: {
-        min: 0,
-        max: 200000
-      },
-      remoteJob: false
-    });
+    setFilters(initialFilters);
     setCurrentPage(1);
+    setHasFilterChanges(false);
     fetchJobs({ search: searchTerm, location: location });
   }, [searchTerm, location]);
 
@@ -654,17 +631,32 @@ const FindJobPage = () => {
   const handleJobTitleHover = async (job, event) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     const tooltipWidth = 400;
+    const tooltipHeight = 500; // Ước tính chiều cao tooltip
     
-    // Tính toán vị trí tooltip để không bị cắt
+    // Tính toán vị trí X (trái/phải) để không bị cắt
     let xPosition = rect.right + 10;
     if (xPosition + tooltipWidth > viewportWidth) {
       xPosition = rect.left - tooltipWidth - 10;
     }
+    // Nếu vẫn bị cắt bên trái, đặt sát cạnh phải
+    if (xPosition < 10) {
+      xPosition = viewportWidth - tooltipWidth - 10;
+    }
+    
+    // Tính toán vị trí Y (trên/dưới) để không bị cắt
+    let yPosition = rect.top;
+    // Nếu tooltip bị cắt ở phía dưới màn hình
+    if (yPosition + tooltipHeight > viewportHeight) {
+      yPosition = Math.max(10, viewportHeight - tooltipHeight - 10);
+    }
+    // Đảm bảo không bị cắt ở phía trên
+    yPosition = Math.max(10, yPosition);
     
     setTooltipPosition({
-      x: Math.max(10, xPosition),
-      y: rect.top
+      x: Math.max(10, Math.min(xPosition, viewportWidth - tooltipWidth - 10)),
+      y: yPosition
     });
     
     setHoveredJob(job);
@@ -730,7 +722,12 @@ const FindJobPage = () => {
   // Handle view details
   const handleViewDetails = (jobId) => {
     // Chuyển đến trang chi tiết công việc
-    window.open(`/jobs/${jobId}`, '_blank');
+    navigate(`/jobs/${jobId}`);
+  };
+
+  // Handle job title click
+  const handleJobTitleClick = (jobId) => {
+    navigate(`/jobs/${jobId}`);
   };
 
   // Component JobTooltip
@@ -910,12 +907,14 @@ const FindJobPage = () => {
               filters={filters}
               toggleFilter={toggleFilter}
               handleSalaryRangeChange={handleSalaryRangeChange}
+              setQuickSalaryRange={setQuickSalaryRange}
               applyFilters={applyFilters}
               clearFilters={clearFilters}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               location={location}
               setLocation={setLocation}
+              hasFilterChanges={hasFilterChanges}
             />
           )}
           {showFilters && (
@@ -949,6 +948,8 @@ const FindJobPage = () => {
                       className="job-title" 
                       onMouseEnter={(e) => handleJobTitleHover(job, e)}
                       onMouseLeave={handleJobTitleLeave}
+                      onClick={() => handleJobTitleClick(job.JobID)}
+                      style={{ cursor: 'pointer' }}
                     >
                       {job.JobName}
                     </h3>

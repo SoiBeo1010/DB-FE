@@ -243,151 +243,91 @@
   font-weight: 400;
 }
 
-/* --- 2. Salary Section & Custom Slider --- */
-.salary-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
+/* --- 2. Salary Section Simple Design --- */
+.salary-quick-select {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.salary-values-text {
+.quick-btn {
+  padding: 10px 12px;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
   font-size: 13px;
-  color: #666;
-}
-
-.salary-range-container {
-  padding: 15px 0;
-}
-
-.multi-range-slider {
-  position: relative;
-  width: 100%;
-  height: 40px;
-  margin-bottom: 20px;
-  pointer-events: none; /* Quan trọng: để click xuyên qua container */
-}
-
-/* Thanh màu xám nền */
-.slider-track-bg {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 100%;
-  height: 6px;
-  background-color: #e5e7eb;
-  border-radius: 3px;
-  z-index: 1;
-}
-
-/* Thanh màu xanh active */
-.slider-track-active {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 6px;
-  background-color: #0066ff; /* Màu xanh giống ảnh */
-  border-radius: 3px;
-  z-index: 2;
-}
-
-/* Input Range (Vô hình nhưng nhận sự kiện kéo) */
-.multi-range-slider .range-input {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 100%;
-  pointer-events: auto; /* Bắt sự kiện */
-  appearance: none;
-  -webkit-appearance: none;
-  background: none;
-  margin: 0;
-  z-index: 3;
-}
-
-/* Nút kéo (Thumb) */
-.multi-range-slider .range-input::-webkit-slider-thumb {
-  pointer-events: auto; /* Bắt sự kiện click */
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #0066ff;
-  border: 3px solid #fff;
-  box-shadow: 0 0 0 1px #0066ff; /* Viền xanh mỏng ngoài cùng */
+  font-weight: 500;
+  color: #475569;
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: all 0.2s;
+  text-align: center;
 }
 
-.multi-range-slider .range-input::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
+.quick-btn:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #3b82f6;
 }
 
-.multi-range-slider .range-input::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #0066ff;
-  border: 3px solid #fff;
-  box-shadow: 0 0 0 1px #0066ff;
-  cursor: pointer;
-  transition: transform 0.1s;
+.quick-btn:active {
+  transform: scale(0.98);
 }
 
-.multi-range-slider .range-input::-moz-range-thumb:hover {
-  transform: scale(1.1);
+.salary-simple-container {
+  padding: 10px 0;
 }
 
-/* --- 3. Radio Buttons List (Custom Radio Style) --- */
-.salary-options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.custom-radio-label {
+.salary-simple-inputs {
   display: flex;
   align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-  color: #4b5563;
-  user-select: none;
+  gap: 10px;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
-.custom-radio-input {
-  display: none; /* Ẩn radio mặc định */
-}
-
-.radio-circle {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #d1d5db;
-  border-radius: 50%;
-  margin-right: 10px;
-  position: relative;
-  transition: border-color 0.2s;
-  flex-shrink: 0;
-}
-
-/* Trạng thái được chọn */
-.custom-radio-input:checked + .radio-circle {
-  border-color: #0066ff;
-}
-
-.custom-radio-input:checked + .radio-circle::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
-  background-color: #0066ff;
-  border-radius: 50%;
-}
-
-.custom-radio-input:checked ~ span {
-  color: #111827;
+.salary-simple-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #1a202c;
+  background: white;
+  text-align: center;
   font-weight: 500;
+  transition: all 0.2s;
+}
+
+.salary-simple-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.salary-simple-input::placeholder {
+  color: #9ca3af;
+}
+
+.salary-simple-input::-webkit-inner-spin-button,
+.salary-simple-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.salary-separator {
+  font-size: 16px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.salary-unit {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* Salary Range Styling - OLD (XÓA HOẶC GIỮ NẾU CẦN FALLBACK) */
@@ -604,6 +544,20 @@
   background: #2563eb;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+}
+
+.btn-apply:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-apply:disabled:hover {
+  background: #e5e7eb;
+  box-shadow: none;
+  transform: none;
 }
 
 .btn-clear {
@@ -1182,10 +1136,32 @@
   border: 1px solid #e2e8f0;
   width: 400px;
   max-width: 90vw;
+  max-height: calc(100vh - 20px);
+  overflow-y: auto;
+  overflow-x: hidden;
   z-index: 9999;
-  overflow: hidden;
   animation: tooltipFadeIn 0.2s ease-out;
   user-select: none;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.job-tooltip::-webkit-scrollbar {
+  width: 6px;
+}
+
+.job-tooltip::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 0 12px 12px 0;
+}
+
+.job-tooltip::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.job-tooltip::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 @keyframes tooltipFadeIn {
