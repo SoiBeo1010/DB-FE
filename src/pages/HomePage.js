@@ -165,7 +165,7 @@ useEffect(() => {
 }, [API_BASE_URL]);
 
   const handleSearch = () => {
-    navigate(`/jobs?keyword=${searchKeyword}&location=${location}`);
+    navigate(`/find-job?search=${searchKeyword}&location=${location}`);
   };
 
   const howItWorks = [
