@@ -627,6 +627,19 @@ const FindJobPage = () => {
     }
   };
 
+  const getJobTypeLabel = (type) => {
+    switch (type) {
+      case 'Onsite': return 'Tại văn phòng';
+      case 'Remote': return 'Từ xa';
+      case 'Hybrid': return 'Kết hợp';
+      case 'Fulltime': return 'Toàn thời gian';
+      case 'Parttime': return 'Bán thời gian';
+      case 'Contract': return 'Hợp đồng';
+      case 'Internship': return 'Thực tập';
+      default: return type;
+    }
+  };
+
   // Xử lý hover cho tooltip
   const handleJobTitleHover = async (job, event) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -715,8 +728,8 @@ const FindJobPage = () => {
 
   // Handle apply job
   const handleApplyJob = (jobId) => {
-    // Chuyển đến trang apply hoặc mở modal apply
-    window.open(`/jobs/apply/${jobId}`, '_blank');
+    // Chuyển đến trang apply
+    navigate(`/jobs/${jobId}/apply`);
   };
 
   // Handle view details
@@ -958,7 +971,7 @@ const FindJobPage = () => {
                 </div>
                 
                 <div className="card-meta">
-                  <span className={getJobTypeClass(job.JobType)}>{job.JobType}</span>
+                  <span className={getJobTypeClass(job.JobType)}>{getJobTypeLabel(job.JobType)}</span>
                   <span className="salary">Mức lương: {job.Salary}</span>
                 </div>
 

@@ -172,6 +172,25 @@ The role will involve translating project specifications into clean, test-driven
     return `$${salaryFrom.toLocaleString()} - $${salaryTo.toLocaleString()}`;
   };
 
+  const getContractTypeLabel = (type) => {
+    switch (type) {
+      case 'Fulltime': return 'Toàn thời gian';
+      case 'Parttime': return 'Bán thời gian';
+      case 'Contract': return 'Hợp đồng';
+      case 'Internship': return 'Thực tập';
+      default: return type;
+    }
+  };
+
+  const getJobTypeLabel = (type) => {
+    switch (type) {
+      case 'Onsite': return 'Tại văn phòng';
+      case 'Remote': return 'Từ xa';
+      case 'Hybrid': return 'Kết hợp';
+      default: return type;
+    }
+  };
+
   const copyJobLink = () => {
     const url = window.location.href;
     navigator.clipboard.writeText(url);
@@ -203,7 +222,7 @@ The role will involve translating project specifications into clean, test-driven
             <p className="company-name">at {job.company?.CName || 'Company'}</p>
             <div className="job-badges">
               <span className={`badge badge-${job.ContractType?.toLowerCase()}`}>
-                {job.ContractType?.toUpperCase()}
+                {getContractTypeLabel(job.ContractType)}
               </span>
             </div>
           </div>
@@ -212,7 +231,7 @@ The role will involve translating project specifications into clean, test-driven
           <button className="btn-bookmark">
             <i className="icon-bookmark"></i>
           </button>
-          <button className="btn-apply">
+          <button className="btn-apply" onClick={() => navigate(`/jobs/${jobId}/apply`)}>
             Ứng tuyển ngay
             <i className="icon-arrow-right"></i>
           </button>
@@ -269,7 +288,7 @@ The role will involve translating project specifications into clean, test-driven
           {/* Job tags */}
           {job.categories && job.categories.length > 0 && (
             <section className="job-section">
-              <h2 className="section-title">Từ khóa công việc:</h2>
+              <h2 className="section-title">Tag:</h2>
               <div className="job-tags">
                 {job.categories.map((category, index) => (
                   <span key={index} className="tag">{category.JCName}</span>
@@ -302,7 +321,7 @@ The role will involve translating project specifications into clean, test-driven
               <div className="info-icon">💼</div>
               <div className="info-content">
                 <div className="info-label">Hình thức làm việc</div>
-                <div className="info-value">{job.JobType}</div>
+                <div className="info-value">{getJobTypeLabel(job.JobType)}</div>
               </div>
             </div>
           </div>
