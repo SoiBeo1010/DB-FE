@@ -524,6 +524,13 @@ const FindJobPage = () => {
         { JobID: 18, JobName: 'System Admin', JobType: 'Onsite', ContractType: 'Fulltime', SalaryFrom: 12000000, SalaryTo: 18000000, CName: 'VCCorp', Logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/VCCorp_logo.svg/1200px-VCCorp_logo.svg.png', Location: 'Hà Nội', Level: 'Mid', RequiredExpYear: 3, JobStatus: 'Active', JCName: 'IT & Software' }
       ];
 
+      // Load jobs from localStorage (posted via PostJob page)
+      const postedJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
+      if (postedJobs.length > 0) {
+        // Merge posted jobs with fallback data
+        allFallbackJobs = [...allFallbackJobs, ...postedJobs];
+      }
+
       // Apply filters to fallback data
       if (searchParams.search) {
         allFallbackJobs = allFallbackJobs.filter(job => 

@@ -28,7 +28,6 @@ import {
 //   getEmployerJobs,
 //   updateJobStatus 
 // } from '../services/employerService';
-import PostJob from './PostJob';
 import '../styles/EmployerDashboard.css';
 
 const EmployerDashboard = () => {
@@ -39,83 +38,45 @@ const EmployerDashboard = () => {
   const [error, setError] = useState(null);
 
   // Get employerId from localStorage or context (you should implement proper auth)
-  const employerId = localStorage.getItem('employerId') || 1; // Default for testing
+  const employerId = parseInt(localStorage.getItem('employerId') || '1'); // Default for testing
+
+  // Load jobs from localStorage (same as MyJob)
+  const [recentJobs, setRecentJobs] = useState([]);
+
+  useEffect(() => {
+    loadEmployerJobs();
+  }, []);
+
+  const loadEmployerJobs = () => {
+    try {
+      // Load all jobs from localStorage
+      const allJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
+      
+      // Filter jobs by current employer and get last 5
+      const employerJobs = allJobs
+        .filter(job => Number(job.EmployerID) === Number(employerId))
+        .sort((a, b) => new Date(b.createdAt || b.PostDate) - new Date(a.createdAt || a.PostDate))
+        .slice(0, 5);
+      
+      setRecentJobs(employerJobs);
+      
+      // Update stats
+      const activeJobs = employerJobs.filter(job => job.JobStatus === 'Active').length;
+      setStats(prev => ({
+        ...prev,
+        NumberOfOpenedJob: activeJobs
+      }));
+    } catch (error) {
+      console.error('Error loading employer jobs:', error);
+    }
+  };
 
   // Hardcoded data - replace with API when ready
   // Schema: employer table có NumberOfOpenedJob, follow table cho savedCandidates
   const [stats, setStats] = useState({
-    NumberOfOpenedJob: 589,
+    NumberOfOpenedJob: 0,
     totalFollowers: 2517
   });
-
-  const [recentJobs, setRecentJobs] = useState([
-    {
-      JobID: 1,
-      JobName: 'UI/UX Designer',
-      JobType: 'Fulltime',
-      ContractType: 'Fulltime',
-      daysRemaining: 27,
-      JobStatus: 'Active',
-      NumberOfApplicant: 798,
-      PostDate: '01/11/2025',
-      Location: 'Hà Nội',
-      SalaryFrom: 15000000,
-      SalaryTo: 25000000
-    },
-    {
-      JobID: 2,
-      JobName: 'Senior UX Designer',
-      JobType: 'Hybrid',
-      ContractType: 'Fulltime',
-      daysRemaining: 8,
-      JobStatus: 'Active',
-      NumberOfApplicant: 185,
-      PostDate: '10/11/2025',
-      Location: 'TP. Hồ Chí Minh',
-      SalaryFrom: 20000000,
-      SalaryTo: 35000000
-    },
-    {
-      JobID: 3,
-      JobName: 'Tech Support',
-      JobType: 'Parttime',
-      ContractType: 'Parttime',
-      daysRemaining: 4,
-      JobStatus: 'Active',
-      NumberOfApplicant: 556,
-      PostDate: '15/11/2025',
-      Location: 'Đà Nẵng',
-      SalaryFrom: 10000000,
-      SalaryTo: 18000000
-    },
-    {
-      JobID: 4,
-      JobName: 'Junior Designer',
-      JobType: 'Onsite',
-      ContractType: 'Fulltime',
-      daysRemaining: 24,
-      JobStatus: 'Active',
-      NumberOfApplicant: 583,
-      PostDate: '05/11/2025',
-      Location: 'Hà Nội',
-      SalaryFrom: 8000000,
-      SalaryTo: 15000000
-    },
-    {
-      JobID: 5,
-      JobName: 'Front End Dev',
-      JobType: 'Remote',
-      ContractType: 'Fulltime',
-      daysRemaining: 0,
-      JobStatus: 'Đã đóng',
-      NumberOfApplicant: 740,
-      ExpireDate: '20/11/2025',
-      PostDate: '07/11/2025',
-      Location: 'TP. Hồ Chí Minh',
-      SalaryFrom: 18000000,
-      SalaryTo: 30000000
-    }
-  ]);
 
   // TODO: Uncomment when API is ready
   // Fetch dashboard data on component mount
@@ -248,17 +209,15 @@ const EmployerDashboard = () => {
             <span>Hồ sơ công ty</span>
           </Link>
           <Link 
-            to="#" 
+            to="/employer/post-job" 
             className={`menu-item ${activeMenu === 'post-job' ? 'active' : ''}`}
-            onClick={() => { setActiveMenu('post-job'); setSidebarOpen(false); }}
           >
             <PlusCircle size={18} />
             <span>Đăng tin</span>
           </Link>
           <Link 
-            to="#" 
+            to="/employer/my-jobs" 
             className={`menu-item ${activeMenu === 'my-jobs' ? 'active' : ''}`}
-            onClick={() => { setActiveMenu('my-jobs'); setSidebarOpen(false); }}
           >
             <Briefcase size={18} />
             <span>Tin đã đăng</span>
@@ -319,7 +278,7 @@ const EmployerDashboard = () => {
               </button>
               <button 
                 className="post-job-btn"
-                onClick={() => setActiveMenu('post-job')}
+                onClick={() => window.location.href = '/employer/post-job'}
               >
                 <PlusCircle size={18} />
                 <span>Đăng tin</span>
@@ -342,8 +301,6 @@ const EmployerDashboard = () => {
               <p>{error}</p>
               <button onClick={() => window.location.reload()}>Thử lại</button>
             </div>
-          ) : activeMenu === 'post-job' ? (
-            <PostJob />
           ) : (
             <>
               <div className="greeting">
@@ -377,7 +334,7 @@ const EmployerDashboard = () => {
           <div className="recent-jobs-section">
             <div className="section-header">
               <h2>Tin tuyển dụng gần đây</h2>
-              <Link to="#" className="view-all">
+              <Link to="/employer/my-jobs" className="view-all">
                 Xem tất cả <ChevronRight size={16} />
               </Link>
             </div>

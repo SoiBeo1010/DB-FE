@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Loader } from 'lucide-react';
 import { postJob } from '../services/employerService';
+import EmployerLayout from '../components/EmployerLayout';
 import '../styles/PostJob.css';
 
 const PostJob = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [postedJobId, setPostedJobId] = useState(null);
+  const [postedJobTitle, setPostedJobTitle] = useState('');
+  const [promoteOption, setPromoteOption] = useState('featured');
   
   const [formData, setFormData] = useState({
     jobTitle: '',
@@ -189,12 +196,13 @@ const PostJob = () => {
       setLoading(true);
       
       // Get employerId from localStorage
-      const employerId = localStorage.getItem('employerId');
-      if (!employerId) {
-        setError('Vui lòng đăng nhập để đăng tin tuyển dụng!');
-        setLoading(false);
-        return;
-      }
+      const employerId = localStorage.getItem('employerId') || '1'; // Default to 1 for testing
+      // TODO: Uncomment this when authentication is implemented
+      // if (!employerId) {
+      //   setError('Vui lòng đăng nhập để đăng tin tuyển dụng!');
+      //   setLoading(false);
+      //   return;
+      // }
       
       // Transform data theo schema database
       // Schema: job table - JobName (max 20), JD (max 500), JobType, ContractType, Level,
@@ -224,33 +232,50 @@ const PostJob = () => {
       
       console.log('Sending job data:', jobData);
       
-      // Call API
-      const response = await postJob(jobData);
-      
-      if (response.success) {
-        setSuccessMessage(`Đăng tin tuyển dụng thành công! Mã tin: ${response.data?.jobId || response.jobId || 'N/A'}`);
+      // Call API (fallback to localStorage if API not available)
+      try {
+        const response = await postJob(jobData);
         
-        // Reset form sau 2 giây
-        setTimeout(() => {
-          setFormData({
-            jobTitle: '',
-            tags: [],
-            minSalary: '',
-            maxSalary: '',
-            contractType: '',
-            experience: '',
-            jobType: '',
-            vacancies: '',
-            expirationDate: '',
-            jobLevel: '',
-            city: '',
-            jobDescription: '',
-            skills: []
-          });
-          setSuccessMessage('');
-        }, 3000);
-      } else {
-        setError(response.message || 'Có lỗi xảy ra khi đăng tin!');
+        if (response.success || response.data) {
+          const newJobId = response.data?.JobID || response.jobId || Date.now();
+          
+          // Lưu job vào localStorage để có thể xem qua API/fallback
+          const savedJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
+          const newJob = {
+            ...jobData,
+            JobID: newJobId,
+            PostDate: new Date().toISOString().split('T')[0],
+            createdAt: new Date().toISOString()
+          };
+          savedJobs.push(newJob);
+          localStorage.setItem('postedJobs', JSON.stringify(savedJobs));
+          
+          // Hiển thị modal success
+          setPostedJobId(newJobId);
+          setPostedJobTitle(formData.jobTitle);
+          setShowSuccessModal(true);
+        } else {
+          setError(response.message || 'Có lỗi xảy ra khi đăng tin!');
+        }
+      } catch (apiError) {
+        // Fallback: Lưu vào localStorage khi API chưa có
+        console.log('API not available, saving to localStorage:', apiError);
+        
+        const newJobId = Date.now();
+        const savedJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
+        const newJob = {
+          ...jobData,
+          JobID: newJobId,
+          PostDate: new Date().toISOString().split('T')[0],
+          createdAt: new Date().toISOString()
+        };
+        savedJobs.push(newJob);
+        localStorage.setItem('postedJobs', JSON.stringify(savedJobs));
+        
+        // Hiển thị modal success
+        setPostedJobId(newJobId);
+        setPostedJobTitle(formData.jobTitle);
+        setShowSuccessModal(true);
       }
       
     } catch (error) {
@@ -261,16 +286,49 @@ const PostJob = () => {
     }
   };
 
-  return (
-    <div className="post-job-container">
-      <div className="post-job-header">
-        <h1>Đăng tin tuyển dụng</h1>
-      </div>
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+    // Reset form
+    setFormData({
+      jobTitle: '',
+      tags: [],
+      minSalary: '',
+      maxSalary: '',
+      contractType: '',
+      experience: '',
+      jobType: '',
+      vacancies: '',
+      expirationDate: '',
+      jobLevel: '',
+      city: '',
+      jobDescription: '',
+      skills: []
+    });
+  };
 
-      {/* Success Message */}
-      {successMessage && (
-        <div className="success-message">
-          <span>✓</span> {successMessage}
+  const handleViewJobs = () => {
+    navigate('/employer/my-jobs');
+  };
+
+  const handlePromoteJob = () => {
+    // Logic để promote job (tính năng premium)
+    console.log('Promoting job with option:', promoteOption);
+    alert(`Tin "${postedJobTitle}" đã được nâng cấp với tùy chọn: ${promoteOption === 'featured' ? 'Nổi bật' : 'Làm nổi bật'}`);
+    handleCloseModal();
+    navigate('/employer/my-jobs');
+  };
+
+  return (
+    <EmployerLayout>
+      <div className="post-job-container">
+        <div className="post-job-header">
+          <h1>Đăng tin tuyển dụng</h1>
+        </div>
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="success-message">
+            <span>✓</span> {successMessage}
         </div>
       )}
 
@@ -536,7 +594,93 @@ const PostJob = () => {
           </button>
         </div>
       </form>
-    </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="success-modal-overlay" onClick={handleCloseModal}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={handleCloseModal}>
+              <X size={24} />
+            </button>
+
+            {/* Success Header */}
+            <div className="modal-header">
+              <div className="success-icon">🎉</div>
+              <h2>Chúc mừng! Tin tuyển dụng đã được đăng thành công!</h2>
+              <p className="modal-subtitle">Bạn có thể quản lý tin đăng của mình trong phần Tin đã đăng</p>
+              <button className="view-jobs-btn" onClick={handleViewJobs}>
+                Xem tin đã đăng →
+              </button>
+            </div>
+
+            {/* Promote Section */}
+            <div className="promote-section">
+              <h3>Nâng cấp tin: {postedJobTitle}</h3>
+              <p className="promote-description">
+                Nâng cấp tin tuyển dụng để tăng khả năng tiếp cận ứng viên. Chọn gói phù hợp với nhu cầu của bạn.
+              </p>
+
+              <div className="promote-options">
+                {/* Featured Option */}
+                <div 
+                  className={`promote-card ${promoteOption === 'featured' ? 'selected' : ''}`}
+                  onClick={() => setPromoteOption('featured')}
+                >
+                  <div className="promote-card-header">
+                    <input 
+                      type="radio" 
+                      name="promote" 
+                      checked={promoteOption === 'featured'}
+                      onChange={() => setPromoteOption('featured')}
+                    />
+                    <h4>Tin nổi bật</h4>
+                  </div>
+                  <div className="promote-preview">
+                    <div className="preview-badge featured">LUÔN Ở ĐẦU TRANG</div>
+                  </div>
+                  <p className="promote-description-text">
+                    Tin tuyển dụng của bạn sẽ luôn hiển thị ở vị trí đầu tiên trong kết quả tìm kiếm.
+                  </p>
+                </div>
+
+                {/* Highlight Option */}
+                <div 
+                  className={`promote-card ${promoteOption === 'highlight' ? 'selected' : ''}`}
+                  onClick={() => setPromoteOption('highlight')}
+                >
+                  <div className="promote-card-header">
+                    <input 
+                      type="radio" 
+                      name="promote" 
+                      checked={promoteOption === 'highlight'}
+                      onChange={() => setPromoteOption('highlight')}
+                    />
+                    <h4>Làm nổi bật</h4>
+                  </div>
+                  <div className="promote-preview">
+                    <div className="preview-badge highlight">TÔ MÀU NỔI BẬT</div>
+                  </div>
+                  <p className="promote-description-text">
+                    Tin tuyển dụng của bạn sẽ được tô màu nổi bật để thu hút sự chú ý của ứng viên.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="modal-actions">
+                <button className="skip-btn" onClick={handleCloseModal}>
+                  Bỏ qua
+                </button>
+                <button className="promote-btn" onClick={handlePromoteJob}>
+                  NÂNG CẤP TIN →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+    </EmployerLayout>
   );
 };
 
