@@ -198,11 +198,11 @@ const PostJob = () => {
       // Get employerId from localStorage
       const employerId = localStorage.getItem('employerId') || '1'; // Default to 1 for testing
       // TODO: Uncomment this when authentication is implemented
-      // if (!employerId) {
-      //   setError('Vui lòng đăng nhập để đăng tin tuyển dụng!');
-      //   setLoading(false);
-      //   return;
-      // }
+      if (!employerId) {
+        setError('Vui lòng đăng nhập để đăng tin tuyển dụng!');
+        setLoading(false);
+        return;
+      }
       
       // Transform data theo schema database
       // Schema: job table - JobName (max 20), JD (max 500), JobType, ContractType, Level,
@@ -353,7 +353,7 @@ const PostJob = () => {
               required
               maxLength={20}
             />
-            <p className="help-text">JobName phải tối đa 20 ký tự theo schema</p>
+            <p className="help-text">JobName tối đa 20 ký tự</p>
           </div>
 
           {/* Tags - Map to job_category */}
@@ -398,8 +398,6 @@ const PostJob = () => {
                 value={formData.minSalary}
                 onChange={handleInputChange}
                 placeholder="Ví dụ: 10000000 (10 triệu)"
-                min="1000000"
-                step="1000000"
                 required
               />
             </div>
@@ -411,13 +409,11 @@ const PostJob = () => {
                 value={formData.maxSalary}
                 onChange={handleInputChange}
                 placeholder="Ví dụ: 20000000 (20 triệu)"
-                min="1000000"
-                step="1000000"
                 required
               />
             </div>
           </div>
-          <p className="help-text">Nhập mức lương bằng VNĐ/tháng (ví dụ: 15000000 cho 15 triệu). SalaryFrom phải &gt; 0 và SalaryTo phải &gt; SalaryFrom theo schema.</p>
+          <p className="help-text">Nhập mức lương bằng VNĐ/tháng (ví dụ: 15000000 cho 15 triệu).</p>
         </div>
 
         {/* Advanced Information */}
