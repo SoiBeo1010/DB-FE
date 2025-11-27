@@ -119,13 +119,13 @@ export default function CandidateDashboard() {
     <div className="dashboard-container">
       {/* Sidebar */}
       <aside className="dashboard-sidebar">
-        <div className="sidebar-header">
-          <span className="sidebar-title">BẢNG ĐIỀU KHIỂN ỨNG VIÊN</span>
+        <div className="db-sidebar-header">
+          <span className="db-sidebar-title">BẢNG ĐIỀU KHIỂN ỨNG VIÊN</span>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav className="db-sidebar-nav">
           <button
-            className={`nav-item ${activeMenu === 'overview' ? 'active' : ''}`}
+            className={`db-nav-item ${activeMenu === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveMenu('overview')}
           >
             <Briefcase size={20} />
@@ -133,7 +133,7 @@ export default function CandidateDashboard() {
           </button>
 
           <button
-            className={`nav-item ${activeMenu === 'applied' ? 'active' : ''}`}
+            className={`db-nav-item ${activeMenu === 'applied' ? 'active' : ''}`}
             onClick={() => setActiveMenu('applied')}
           >
             <Briefcase size={20} />
@@ -141,7 +141,7 @@ export default function CandidateDashboard() {
           </button>
 
           <button
-            className={`nav-item ${activeMenu === 'favorite' ? 'active' : ''}`}
+            className={`db-nav-item ${activeMenu === 'favorite' ? 'active' : ''}`}
             onClick={() => setActiveMenu('favorite')}
           >
             <Bookmark size={20} />
@@ -149,16 +149,16 @@ export default function CandidateDashboard() {
           </button>
 
           <button
-            className={`nav-item ${activeMenu === 'alerts' ? 'active' : ''}`}
+            className={`db-nav-item ${activeMenu === 'alerts' ? 'active' : ''}`}
             onClick={() => setActiveMenu('alerts')}
           >
             <Bell size={20} />
             <span>Thông báo việc làm</span>
-            <span className="nav-badge">09</span>
+            <span className="db-nav-badge">09</span>
           </button>
 
           <button
-            className={`nav-item ${activeMenu === 'settings' ? 'active' : ''}`}
+            className={`db-nav-item ${activeMenu === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveMenu('settings')}
           >
             <Settings size={20} />
@@ -173,46 +173,46 @@ export default function CandidateDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="dashboard-main">
+      <main className="dashboard-candidate">
         {/* Welcome Section */}
-        <div className="welcome-section">
+        <div className="db-welcome-section">
           <h1 className="welcome-title">Xin chào, {data.user.name}</h1>
           <p className="welcome-subtitle">Đây là hoạt động hàng ngày và thông báo việc làm của bạn</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="stats-grid">
-          <div className="stat-card blue">
-            <div className="stat-content">
+        <div className="db-stats-grid">
+          <div className="db-stat-card blue">
+            <div className="db-stat-content">
               <div>
-                <div className="stat-number">{data.stats.appliedJobs}</div>
-                <div className="stat-label">Việc đã ứng tuyển</div>
+                <div className="db-stat-number">{data.stats.appliedJobs}</div>
+                <div className="db-stat-label">Việc đã ứng tuyển</div>
               </div>
-              <div className="stat-icon blue">
+              <div className="db-stat-icon blue">
                 <Briefcase size={28} color="#0A65CC" />
               </div>
             </div>
           </div>
 
-          <div className="stat-card yellow">
-            <div className="stat-content">
+          <div className="db-stat-card yellow">
+            <div className="db-stat-content">
               <div>
-                <div className="stat-number">{data.stats.favoriteJobs}</div>
-                <div className="stat-label">Việc yêu thích</div>
+                <div className="db-stat-number">{data.stats.favoriteJobs}</div>
+                <div className="db-stat-label">Việc yêu thích</div>
               </div>
-              <div className="stat-icon yellow">
+              <div className="db-stat-icon yellow">
                 <Bookmark size={28} color="#F59E0B" />
               </div>
             </div>
           </div>
 
-          <div className="stat-card green">
-            <div className="stat-content">
+          <div className="db-stat-card green">
+            <div className="db-stat-content">
               <div>
-                <div className="stat-number">{data.stats.jobAlerts}</div>
-                <div className="stat-label">Thông báo việc làm</div>
+                <div className="db-stat-number">{data.stats.jobAlerts}</div>
+                <div className="db-stat-label">Thông báo việc làm</div>
               </div>
-              <div className="stat-icon green">
+              <div className="db-stat-icon green">
                 <Bell size={28} color="#10B981" />
               </div>
             </div>
@@ -225,24 +225,24 @@ export default function CandidateDashboard() {
             <img 
               src={data.user.avatar} 
               alt="Avatar" 
-              className="profile-avatar"
+              className="db-profile-avatar"
             />
             <div>
               <div className="profile-alert-title">Hồ sơ của bạn chưa hoàn tất.</div>
               <div className="profile-alert-text">Hoàn thành chỉnh sửa hồ sơ và xây dựng CV tùy chỉnh của bạn</div>
             </div>
           </div>
-          <button className="edit-profile-btn" onClick={handleEditProfile}>
+          <button className="db-edit-profile-btn" onClick={handleEditProfile}>
             Chỉnh sửa hồ sơ
             <ArrowRight size={18} />
           </button>
         </div>
 
         {/* Recently Applied Section */}
-        <div className="recent-section">
-          <div className="section-header">
-            <h2 className="section-title">Đã ứng tuyển gần đây</h2>
-            <button className="view-all-btn">
+        <div className="db-recent-section">
+          <div className="db-section-header">
+            <h2 className="db-section-title">Đã ứng tuyển gần đây</h2>
+            <button className="db-view-all-btn">
               Xem tất cả
               <ArrowRight size={16} />
             </button>
@@ -257,24 +257,24 @@ export default function CandidateDashboard() {
           </div>
 
           {/* Job List */}
-          <div className="job-list">
+          <div className="db-job-list">
             {data.recentApplications.map((job) => (
-              <div key={job.id} className="job-card">
-                <div className="job-info">
-                  <img src={job.logo} alt={job.company} className="company-logo" />
+              <div key={job.id} className="db-job-card">
+                <div className="db-job-info">
+                  <img src={job.logo} alt={job.company} className="db-company-logo" />
                   <div>
-                    <div className="job-header">
-                      <h3 className="job-title">{job.title}</h3>
-                      <span className={`job-type ${getJobTypeClass(job.type)}`}>
+                    <div className="db-job-header">
+                      <h3 className="db-job-title">{job.title}</h3>
+                      <span className={`db-job-type ${getJobTypeClass(job.type)}`}>
                         {job.type}
                       </span>
                     </div>
-                    <div className="job-meta">
-                      <span className="meta-item">
+                    <div className="db-job-meta">
+                      <span className="db-meta-item">
                         <MapPin size={14} />
                         {job.location}
                       </span>
-                      <span className="meta-item">
+                      <span className="db-meta-item">
                         <DollarSign size={14} />
                         {job.salary}
                       </span>
@@ -282,16 +282,16 @@ export default function CandidateDashboard() {
                   </div>
                 </div>
 
-                <div className="job-date">
+                <div className="db-job-date">
                   {job.dateApplied}
                 </div>
 
-                <div className="job-status">
+                <div className="db-job-status">
                   <CheckCircle size={16} />
                   <span>Đang hoạt động</span>
                 </div>
 
-                <div className="job-actions">
+                <div className="db-job-actions">
                   <button 
                     className="details-btn"
                     onClick={() => handleViewDetails(job.id)}
