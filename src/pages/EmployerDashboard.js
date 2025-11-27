@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
-  User, 
-  PlusCircle, 
-  Briefcase, 
-  Bookmark, 
-  CreditCard, 
-  Building2, 
-  Settings, 
-  LogOut,
-  Bell,
-  Menu,
-  X,
   ChevronRight,
   Users,
   CheckCircle2,
@@ -20,8 +8,10 @@ import {
   MoreVertical,
   Rocket,
   Eye,
-  Ban
+  Ban,
+  Briefcase
 } from 'lucide-react';
+import EmployerLayout from '../components/EmployerLayout';
 // TODO: Uncomment when API is ready
 // import { 
 //   getEmployerStats, 
@@ -31,9 +21,7 @@ import {
 import '../styles/EmployerDashboard.css';
 
 const EmployerDashboard = () => {
-  const [activeMenu, setActiveMenu] = useState('overview');
   const [showJobActions, setShowJobActions] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false); // Set to false to show hardcoded data
   const [error, setError] = useState(null);
 
@@ -182,131 +170,23 @@ const EmployerDashboard = () => {
   };
 
   return (
-    <div className="employer-dashboard">
-      {/* Sidebar */}
-      <aside className={`dashboard-sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-header">
-          <h3>BẢNG ĐIỀU KHIỂN</h3>
-          <button className="close-sidebar" onClick={() => setSidebarOpen(false)}>
-            <X size={20} />
-          </button>
-        </div>
-        <nav className="sidebar-menu">
-          <Link 
-            to="#" 
-            className={`menu-item ${activeMenu === 'overview' ? 'active' : ''}`}
-            onClick={() => { setActiveMenu('overview'); setSidebarOpen(false); }}
-          >
-            <LayoutDashboard size={18} />
-            <span>Tổng quan</span>
-          </Link>
-          <Link 
-            to="#" 
-            className={`menu-item ${activeMenu === 'profile' ? 'active' : ''}`}
-            onClick={() => { setActiveMenu('profile'); setSidebarOpen(false); }}
-          >
-            <User size={18} />
-            <span>Hồ sơ công ty</span>
-          </Link>
-          <Link 
-            to="/employer/post-job" 
-            className={`menu-item ${activeMenu === 'post-job' ? 'active' : ''}`}
-          >
-            <PlusCircle size={18} />
-            <span>Đăng tin</span>
-          </Link>
-          <Link 
-            to="/employer/my-jobs" 
-            className={`menu-item ${activeMenu === 'my-jobs' ? 'active' : ''}`}
-          >
-            <Briefcase size={18} />
-            <span>Tin đã đăng</span>
-          </Link>
-          <Link 
-            to="#" 
-            className={`menu-item ${activeMenu === 'saved' ? 'active' : ''}`}
-            onClick={() => { setActiveMenu('saved'); setSidebarOpen(false); }}
-          >
-            <Bookmark size={18} />
-            <span>Ứng viên</span>
-          </Link>
-          <Link 
-            to="#" 
-            className={`menu-item ${activeMenu === 'billing' ? 'active' : ''}`}
-            onClick={() => { setActiveMenu('billing'); setSidebarOpen(false); }}
-          >
-            <CreditCard size={18} />
-            <span>Thanh toán</span>
-          </Link>
-          <Link 
-            to="#" 
-            className={`menu-item ${activeMenu === 'companies' ? 'active' : ''}`}
-            onClick={() => { setActiveMenu('companies'); setSidebarOpen(false); }}
-          >
-            <Building2 size={18} />
-            <span>Công ty</span>
-          </Link>
-          <Link 
-            to="#" 
-            className={`menu-item ${activeMenu === 'settings' ? 'active' : ''}`}
-            onClick={() => { setActiveMenu('settings'); setSidebarOpen(false); }}
-          >
-            <Settings size={18} />
-            <span>Cài đặt</span>
-          </Link>
-        </nav>
-        <button className="logout-btn">
-          <LogOut size={18} />
-          <span>Đăng xuất</span>
-        </button>
-      </aside>
-
-      {/* Main Content */}
-      <main className="dashboard-main">
-        {/* Header */}
-        <header className="dashboard-header">
-          <div className="header-content">
-            <div className="header-left">
-              <button className="menu-toggle" onClick={() => setSidebarOpen(true)}>
-                <Menu size={24} />
-              </button>
-            </div>
-            <div className="header-right">
-              <button className="notification-btn">
-                <Bell size={20} />
-                <span className="notification-badge">1</span>
-              </button>
-              <button 
-                className="post-job-btn"
-                onClick={() => window.location.href = '/employer/post-job'}
-              >
-                <PlusCircle size={18} />
-                <span>Đăng tin</span>
-              </button>
-              <div className="user-profile">
-                <User size={20} />
-              </div>
-            </div>
+    <EmployerLayout>
+      <div className="dashboard-content">
+        {loading ? (
+          <div className="loading-state">
+            <p>Đang tải dữ liệu...</p>
           </div>
-        </header>
-
-        {/* Dashboard Content */}
-        <div className="dashboard-content">
-          {loading ? (
-            <div className="loading-state">
-              <p>Đang tải dữ liệu...</p>
+        ) : error ? (
+          <div className="error-state">
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()}>Thử lại</button>
+          </div>
+        ) : (
+          <>
+            <div className="greeting">
+              <h1>Xin chào, Instagram</h1>
+              <p>Đây là hoạt động và ứng tuyển hàng ngày của bạn</p>
             </div>
-          ) : error ? (
-            <div className="error-state">
-              <p>{error}</p>
-              <button onClick={() => window.location.reload()}>Thử lại</button>
-            </div>
-          ) : (
-            <>
-              <div className="greeting">
-                <h1>Xin chào, Instagram</h1>
-                <p>Đây là hoạt động và ứng tuyển hàng ngày của bạn</p>
-              </div>
 
               {/* Stats Cards */}
               <div className="stats-cards">
@@ -408,14 +288,8 @@ const EmployerDashboard = () => {
             </>
           )}
         </div>
-
-        {/* Footer */}
-        <footer className="dashboard-footer">
-          <p>© 2021 Jobpilot - Job Board. All rights Reserved</p>
-        </footer>
-      </main>
-    </div>
-  );
-};
+      </EmployerLayout>
+    );
+  };
 
 export default EmployerDashboard;

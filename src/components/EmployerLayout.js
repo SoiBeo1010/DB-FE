@@ -30,7 +30,6 @@ const EmployerLayout = ({ children }) => {
       <aside className={`employer-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <Link to="/" className="logo">
-            <span className="logo-icon">📋</span>
             <span className="logo-text">ITviec</span>
           </Link>
           <button 
@@ -42,7 +41,6 @@ const EmployerLayout = ({ children }) => {
         </div>
 
         <div className="sidebar-section">
-          <h4 className="section-title">BẢNG ĐIỀU KHIỂN</h4>
           <nav className="sidebar-menu">
             <Link 
               to="/employer-dashboard" 
@@ -90,7 +88,6 @@ const EmployerLayout = ({ children }) => {
         </div>
 
         <div className="sidebar-section">
-          <h4 className="section-title">CÀI ĐẶT</h4>
           <nav className="sidebar-menu">
             <Link 
               to="/employer/company" 
@@ -130,7 +127,6 @@ const EmployerLayout = ({ children }) => {
             </button>
             
             <div className="header-search">
-              <span className="breadcrumb">Bảng điều khiển</span>
             </div>
 
             <div className="header-actions">
