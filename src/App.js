@@ -14,6 +14,7 @@ import PricingPlans from "./pages/EmployerPricing";
 import EmployerDashboard from "./pages/EmployerDashboard";
 import PostJob from "./pages/PostJob";
 import MyJob from "./pages/MyJob";
+import CandidateDashboard from "./pages/CandidateDashboard";
 
 function App() {
   console.log("App rendered");
@@ -34,6 +35,7 @@ function App() {
          <Route path="/employer/post-job" element={<PostJob />} />
          <Route path="/employer/my-jobs" element={<MyJob />} />
         
+          <Route path="/candidate-dashboard" element={<CandidateDashboard/>} />
         
       </Routes>
     </Layout>
