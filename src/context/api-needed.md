@@ -174,6 +174,20 @@
     "postDate": "2024-11-20T10:30:00Z",
     "expireDate": "2024-12-25T23:59:59Z",
     "NumberOfApplicant": 87,
+    "statistics": [
+  {
+    "label": "Total Applications",
+    "number": "87"
+  },
+  {
+    "label": "Approved Applications",
+    "number": "12"
+  },
+  {
+    "label": "Declined Applications",
+    "number": "68"
+  }
+]
     "Views": 1250,
     "featured": true,
     "urgent": false,

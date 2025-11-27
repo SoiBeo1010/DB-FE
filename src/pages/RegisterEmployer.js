@@ -5,11 +5,12 @@ import '../styles/Signup.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-const Register = () => {
+const RegisterEmployer = () => {
   const navigate = useNavigate();
 
   // Form state
-  const [isEmployer, setIsEmployer] = useState(false);
+  const [isEmployer, setIsEmployer] = useState(true);
+
   const [formData, setFormData] = useState({
     fullName: '',
     username: '',
@@ -88,7 +89,11 @@ const Register = () => {
               <button
                 type="button"
                 className={`selector-btn ${!isEmployer ? 'active' : ''}`}
-                onClick={() => setIsEmployer(false)}
+                onClick={() => {
+      setIsEmployer(false);
+      navigate('/signup'); // 👉 chuyển sang trang đăng ký ứng viên
+    }}
+                
               >
                 <User size={20} strokeWidth={2} />
                 Ứng viên
@@ -97,7 +102,7 @@ const Register = () => {
               <button
                 type="button"
                 className={`selector-btn ${isEmployer ? 'active' : ''}`}
-                onClick={() => navigate('/register-employer')}
+                 onClick={() => setIsEmployer(true)}
               >
                 <Building2 size={20} strokeWidth={2} />
                 Nhà tuyển dụng
@@ -106,93 +111,210 @@ const Register = () => {
           </div>
 
           {/* FORM ĐĂNG KÝ */}
-          <form onSubmit={handleSubmit} className="form-container">
-            <div className="form-row">
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Họ và tên"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                className="form-input"
-                required
-              />
-              <input
-                type="text"
-                name="username"
-                placeholder="Tên đăng nhập"
-                value={formData.username}
-                onChange={handleInputChange}
-                className="form-input"
-                required
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="empreg-form">
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="form-input full-width"
-              required
-            />
+  {/* --- SECTION 1: PERSON INFO --- */}
+  <h3 className="empreg-section-title">Thông tin người đại diện</h3>
 
-            <div className="password-input-wrapper">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Mật khẩu"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="form-input full-width"
-                required
-              />
-              <button
-                type="button"
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
+  <div className="empreg-row">
+    <input
+      type="text"
+      name="fullName"
+      placeholder="Họ và tên"
+      value={formData.fullName}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    />
+    <input
+      type="text"
+      name="positionTitle"
+      placeholder="Chức vụ (VD: HR Manager)"
+      value={formData.positionTitle}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    />
+  </div>
 
-            <div className="password-input-wrapper">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="Nhập lại mật khẩu"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className="form-input full-width"
-                required
-              />
-              <button
-                type="button"
-                className="toggle-password"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                aria-label={showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-              >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
+  <div className="empreg-row">
+    <input
+      type="email"
+      name="email"
+      placeholder="Email"
+      value={formData.email}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    />
+    <input
+      type="text"
+      name="phoneNumber"
+      placeholder="Số điện thoại"
+      value={formData.phoneNumber}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    />
+  </div>
 
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                name="agreedToTerms"
-                checked={formData.agreedToTerms}
-                onChange={handleInputChange}
-                required
-              />
-              <span>Tôi đã đọc và đồng ý với <a href="#terms">Điều khoản dịch vụ</a></span>
-            </label>
+  {/* PASSWORD */}
+  <div className="empreg-password-wrapper">
+    <input
+      type={showPassword ? "text" : "password"}
+      name="password"
+      placeholder="Mật khẩu"
+      value={formData.password}
+      onChange={handleInputChange}
+      className="empreg-input full-width"
+      required
+    />
+    <button
+      type="button"
+      className="empreg-toggle-password"
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+    </button>
+  </div>
 
-            <button type="submit" className="submit-btn">
-              Tạo tài khoản
-            </button>
-          </form>
+  <div className="empreg-password-wrapper">
+    <input
+      type={showConfirmPassword ? "text" : "password"}
+      name="confirmPassword"
+      placeholder="Nhập lại mật khẩu"
+      value={formData.confirmPassword}
+      onChange={handleInputChange}
+      className="empreg-input full-width"
+      required
+    />
+    <button
+      type="button"
+      className="empreg-toggle-password"
+      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+    >
+      {showConfirmPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+    </button>
+  </div>
+
+  {/* --- SECTION 2: COMPANY INFO --- */}
+  <h3 className="empreg-section-title">Thông tin công ty</h3>
+
+  <div className="empreg-row">
+    <input
+      type="text"
+      name="companyName"
+      placeholder="Tên công ty"
+      value={formData.companyName}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    />
+    <input
+      type="text"
+      name="taxNumber"
+      placeholder="Mã số thuế"
+      value={formData.taxNumber}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    />
+  </div>
+
+  <div className="empreg-row">
+    <select
+      name="industry"
+      value={formData.industry}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    >
+      <option value="">Lĩnh vực</option>
+      <option value="IT">Công nghệ thông tin</option>
+      <option value="Finance">Tài chính</option>
+      <option value="Education">Giáo dục</option>
+      <option value="Manufacturing">Sản xuất</option>
+      <option value="Other">Khác</option>
+    </select>
+
+    <select
+      name="companySize"
+      value={formData.companySize}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    >
+      <option value="">Quy mô công ty</option>
+      <option value="1-10">1–10 nhân sự</option>
+      <option value="11-50">11–50 nhân sự</option>
+      <option value="51-200">51–200 nhân sự</option>
+      <option value="200+">200+ nhân sự</option>
+    </select>
+  </div>
+
+  <div className="empreg-row">
+    <input
+      type="url"
+      name="website"
+      placeholder="Website công ty"
+      value={formData.website}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    />
+    <input
+      type="text"
+      name="nationality"
+      placeholder="Quốc gia (VD: Vietnam)"
+      value={formData.nationality}
+      onChange={handleInputChange}
+      className="empreg-input"
+      required
+    />
+  </div>
+
+  {/* LOGO */}
+  <div className="empreg-file-upload">
+    <label>Logo công ty</label>
+    <input
+      type="file"
+      name="logo"
+      accept="image/*"
+      onChange={handleInputChange}
+      className="empreg-file"
+      required
+    />
+  </div>
+
+  <textarea
+    name="description"
+    placeholder="Mô tả về công ty"
+    value={formData.description}
+    onChange={handleInputChange}
+    className="empreg-textarea"
+    rows={4}
+    required
+  />
+
+  {/* TERMS */}
+  <label className="empreg-checkbox">
+    <input
+      type="checkbox"
+      name="agreedToTerms"
+      checked={formData.agreedToTerms}
+      onChange={handleInputChange}
+      required
+    />
+    <span>
+      Tôi đồng ý với <a href="#terms">Điều khoản dịch vụ</a>
+    </span>
+  </label>
+
+  <button type="submit" className="empreg-submit">
+    Tạo tài khoản nhà tuyển dụng
+  </button>
+</form>
+
 
           <div className="divider"><span>HOẶC</span></div>
 
@@ -255,4 +377,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default RegisterEmployer;

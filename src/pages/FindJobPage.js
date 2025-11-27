@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/FindJobPage.css';
+import '../utils/scroll.ts'
 import { 
   Briefcase,
   MapPin, 

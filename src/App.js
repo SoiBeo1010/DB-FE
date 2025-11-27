@@ -7,7 +7,10 @@ import FindJobPage from "./pages/FindJobPage";
 import JobDetails from "./pages/JobDetails";
 import ApplyJobPage from "./pages/ApplyJobPage";
 import SignIn from "./pages/SignInPage";
-
+import EmployerLanding from "./pages/EmployerLanding";
+import RegisterEmployer from "./pages/RegisterEmployer";
+import SignInEmployer from "./pages/SignInEmployer";
+import PricingPlans from "./pages/EmployerPricing";
 function App() {
   console.log("App rendered");
   return (
@@ -19,6 +22,11 @@ function App() {
         <Route path="/find-job" element={<FindJobPage />} />
         <Route path="/jobs/:jobId" element={<JobDetails />} />
         <Route path="/jobs/:jobId/apply" element={<ApplyJobPage />} />
+         <Route path="/employer" element={<EmployerLanding />} />
+        <Route path="/register-employer" element={<RegisterEmployer />} />
+         <Route path="/signin-employer" element={<SignInEmployer />} />
+         <Route path="/pricing-plans" element={<PricingPlans/>} />
+        
         
       </Routes>
     </Layout>

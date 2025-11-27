@@ -8,7 +8,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   
   // Danh sách các trang KHÔNG có Navbar + Footer
-  const noLayoutPaths = ['/signin', '/register', '/employer/register', '/signup'];
+  const noLayoutPaths = [ ];
 
   const shouldShowLayout = !noLayoutPaths.includes(location.pathname);
 
