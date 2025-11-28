@@ -11,6 +11,9 @@ import EmployerLanding from "./pages/EmployerLanding";
 import RegisterEmployer from "./pages/RegisterEmployer";
 import SignInEmployer from "./pages/SignInEmployer";
 import PricingPlans from "./pages/EmployerPricing";
+import EmployerDashboard from "./pages/EmployerDashboard";
+import PostJob from "./pages/PostJob";
+import MyJob from "./pages/MyJob";
 import CandidateDashboard from "./pages/CandidateDashboard";
 
 function App() {
@@ -28,6 +31,10 @@ function App() {
         <Route path="/register-employer" element={<RegisterEmployer />} />
          <Route path="/signin-employer" element={<SignInEmployer />} />
          <Route path="/pricing-plans" element={<PricingPlans/>} />
+         <Route path="/employer-dashboard" element={<EmployerDashboard />} />
+         <Route path="/employer/post-job" element={<PostJob />} />
+         <Route path="/employer/my-jobs" element={<MyJob />} />
+        
           <Route path="/candidate-dashboard" element={<CandidateDashboard/>} />
         
       </Routes>
