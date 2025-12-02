@@ -6,6 +6,64 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
+/* Loading & Error States */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0d6efd;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error, .not-found {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.error h3, .not-found h3 {
+  color: #dc3545;
+  margin-bottom: 16px;
+}
+
+.error p, .not-found p {
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.retry-btn, .back-btn {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.retry-btn:hover, .back-btn:hover {
+  background: #0b5ed7;
+}
+
 /* Breadcrumb */
 .breadcrumb {
   font-size: 14px;
@@ -98,14 +156,15 @@
   text-transform: uppercase;
 }
 
+.badge-permanent,
 .badge-fulltime,
-.badge-full_time {
+.badge-full-time {
   background-color: #d4edda;
   color: #155724;
 }
 
 .badge-parttime,
-.badge-part_time {
+.badge-part-time {
   background-color: #fff3cd;
   color: #856404;
 }
@@ -116,6 +175,36 @@
 }
 
 .badge-freelance {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+.badge-internship {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.badge-onsite {
+  background-color: #e7f3ff;
+  color: #0066cc;
+}
+
+.badge-remote {
+  background-color: #f0f9ff;
+  color: #0284c7;
+}
+
+.badge-hybrid {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge-expired {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.badge-closed {
   background-color: #e2e3e5;
   color: #383d41;
 }
@@ -165,16 +254,25 @@
   transition: all 0.3s;
 }
 
-.btn-apply:hover {
+.btn-apply:hover:not(.disabled):not(:disabled) {
   background-color: #0a58ca;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
 }
 
+.btn-apply.disabled,
+.btn-apply:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Main Content Layout */
 .job-main-content {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 350px;
   gap: 30px;
 }
 
@@ -184,6 +282,7 @@
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  min-height: 600px;
 }
 
 .job-section {
@@ -449,6 +548,86 @@
 
 .icon-email::before {
   content: "✉";
+}
+
+/* Company Information */
+.company-info {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 16px;
+  display: flex;
+  gap: 16px;
+}
+
+.company-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1.6;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9ecef;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.company-detail:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.company-detail strong {
+  color: #666;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.company-detail-value {
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  width: 100%;
+}
+
+.company-website {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.company-website:hover {
+  text-decoration: underline;
+}
+
+/* Date Status Labels */
+.expired-text {
+  color: #dc3545;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.urgent-text {
+  color: #fd7e14;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.normal-text {
+  color: #28a745;
+  font-size: 12px;
+}
+
+/* Overview Value Enhancements */
+.overview-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 /* Responsive Design */

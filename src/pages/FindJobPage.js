@@ -52,6 +52,22 @@ const formatVND = (amount) => {
   return `${(amount / 1000).toFixed(0)}k`;
 };
 
+// Helper function để tạo fallback logo từ tên công ty
+const getCompanyInitials = (companyName) => {
+  if (!companyName) return 'C';
+  const words = companyName.trim().split(/\s+/);
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  return companyName.substring(0, 2).toUpperCase();
+};
+
+const getDefaultLogoUrl = (companyName) => {
+  const initials = getCompanyInitials(companyName);
+  // Sử dụng UI Avatars API để tạo avatar đẹp
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=3b82f6&color=fff&size=32&bold=true`;
+};
+
 // Component FilterSidebar - Tách ra ngoài để tối ưu performance
 const FilterSidebar = ({ 
   showFilters, 
@@ -334,6 +350,25 @@ const FindJobPage = () => {
   // API endpoint
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+  // Normalize job data từ API về format chuẩn
+  const normalizeJobData = (job) => {
+    return {
+      JobID: job.JobID || job.jobId || job.id,
+      JobName: job.JobName || job.jobName || job.title || job.name,
+      JobType: job.JobType || job.jobType || job.type,
+      ContractType: job.ContractType || job.contractType || job.JobType || job.jobType,
+      SalaryFrom: job.SalaryFrom || job.salaryFrom || job.salary_from || job.minSalary || 0,
+      SalaryTo: job.SalaryTo || job.salaryTo || job.salary_to || job.maxSalary || 0,
+      CompanyName: job.CompanyName || job.companyName || job.company_name || job.company,
+      CompanyLogo: job.CompanyLogo || job.companyLogo || job.company_logo || job.logo,
+      Location: job.Location || job.location,
+      Level: job.Level || job.level || job.experienceLevel,
+      RequireExpYear: job.RequireExpYear || job.requireExpYear || job.experience || 0,
+      JobStatus: job.JobStatus || job.jobStatus || job.status || 'Active',
+      JCName: job.JCName || job.jcName || job.category || job.industry
+    };
+  };
+
   // Fetch job details from backend
   const fetchJobDetails = async (jobId) => {
     if (jobDetails[jobId]) {
@@ -352,14 +387,28 @@ const FindJobPage = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const data = await response.json();
+      const result = await response.json();
+      
+      // Normalize job details từ API
+      const normalizedData = {
+        id: result.data?.JobID || result.data?.id || jobId,
+        description: result.data?.JobDescription || result.data?.description || result.data?.Description,
+        requirements: result.data?.JobRequirements || result.data?.requirements || result.data?.Requirements || [],
+        benefits: result.data?.JobBenefits || result.data?.benefits || result.data?.Benefits || [],
+        applicationDeadline: result.data?.ApplicationDeadline || result.data?.deadline || result.data?.Deadline,
+        experience: result.data?.RequireExpYear ? `${result.data.RequireExpYear} năm` : (result.data?.experience || result.data?.Experience),
+        workLocation: result.data?.Location || result.data?.location || result.data?.WorkLocation,
+        skills: result.data?.Skills || result.data?.skills || result.data?.RequiredSkills || [],
+        contactEmail: result.data?.ContactEmail || result.data?.email || result.data?.Email,
+        applicationLink: result.data?.ApplicationLink || `/jobs/apply/${jobId}`
+      };
       
       setJobDetails(prev => ({
         ...prev,
-        [jobId]: data
+        [jobId]: normalizedData
       }));
       
-      return data;
+      return normalizedData;
       
     } catch (err) {
       console.error('Error fetching job details:', err);
@@ -508,7 +557,9 @@ const FindJobPage = () => {
       // Backend returns: { success: true, data: { jobs, pagination }, message }
       if (result.success && result.data) {
         console.log('API Job Data Sample:', result.data.jobs[0]); // Debug: xem cấu trúc data từ API
-        setJobData(result.data.jobs || []);
+        // Normalize job data từ API
+        const normalizedJobs = (result.data.jobs || []).map(job => normalizeJobData(job));
+        setJobData(normalizedJobs);
         setTotalPages(result.data.pagination?.totalPages || 1);
       } else {
         throw new Error('Invalid response format from server');
@@ -1041,6 +1092,16 @@ const FindJobPage = () => {
 
                 <div className="card-footer">
                   <div className="company-info">
+                    <div className="company-logo">
+                      <img 
+                        src={job.CompanyLogo || getDefaultLogoUrl(job.CompanyName)} 
+                        alt={job.CompanyName}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = getDefaultLogoUrl(job.CompanyName);
+                        }}
+                      />
+                    </div>
                     <div className="info-text">
                       <div className="company-name">{job.CompanyName}</div>
                       <div className="location">
