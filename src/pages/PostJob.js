@@ -17,7 +17,6 @@ const PostJob = () => {
   
   const [formData, setFormData] = useState({
     jobTitle: '',
-    tags: [], // Map to job_category (in table)
     minSalary: '',
     maxSalary: '',
     contractType: '',
@@ -28,45 +27,38 @@ const PostJob = () => {
     jobLevel: '',
     city: '', // Map to Location (max 30 chars)
     jobDescription: '', // Map to JD (max 500 chars)
-    skills: [] // Map to require table
+    categories: [], // Danh mục công việc
+    skills: [] // Kỹ năng yêu cầu
   });
-
-  const [currentTag, setCurrentTag] = useState('');
 
   // Predefined options - Dựa trên schema database
   // Số năm kinh nghiệm (0-10+)
-  const experienceLevels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10+'];
+  const experienceLevels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
   
-  // JobType trong DB: Onsite, Remote, Hybrid
+  // JobType trong DB: Full-time, Part-time (theo sample data trong btl2.sql)
   const jobTypes = [
-    { value: 'Onsite', label: 'Tại văn phòng' },
-    { value: 'Remote', label: 'Làm việc từ xa' },
-    { value: 'Hybrid', label: 'Kết hợp' }
+    { value: 'Full-time', label: 'Toàn thời gian' },
+    { value: 'Part-time', label: 'Bán thời gian' }
   ];
   
-  // Level trong DB: Intern, Fresher, Junior, Middle, Senior, Manager, Leader
+  // Level trong DB: Junior, Middle, Senior (theo sample data trong btl2.sql)
   const jobLevels = [
-    { value: 'Intern', label: 'Thực tập sinh' },
-    { value: 'Fresher', label: 'Mới ra trường' },
     { value: 'Junior', label: 'Nhân viên' },
     { value: 'Middle', label: 'Nhân viên chính' },
-    { value: 'Senior', label: 'Nhân viên cao cấp' },
-    { value: 'Manager', label: 'Quản lý' },
-    { value: 'Leader', label: 'Trưởng nhóm' }
+    { value: 'Senior', label: 'Nhân viên cao cấp' }
   ];
   
-  // ContractType trong DB: Fulltime, Parttime, Freelance, Internship
+  // ContractType trong DB: Permanent, Contract, Freelance (theo sample data trong btl2.sql)
   const contractTypes = [
-    { value: 'Fulltime', label: 'Toàn thời gian' },
-    { value: 'Parttime', label: 'Bán thời gian' },
-    { value: 'Freelance', label: 'Tự do' },
-    { value: 'Internship', label: 'Thực tập' }
+    { value: 'Permanent', label: 'Toàn thời gian' },
+    { value: 'Contract', label: 'Hợp đồng' },
+    { value: 'Freelance', label: 'Tự do' }
   ];
 
-  // Các thành phố lớn tại Việt Nam
+  // Các thành phố lớn tại Việt Nam (tối đa 30 ký tự theo schema)
   const cities = [
     'Hà Nội',
-    'TP. Hồ Chí Minh',
+    'TP.HCM',
     'Đà Nẵng',
     'Hải Phòng',
     'Cần Thơ',
@@ -75,33 +67,38 @@ const PostJob = () => {
     'Huế',
     'Vũng Tàu',
     'Quy Nhơn',
+    'Remote',
     'Khác'
   ];
 
-  // Kỹ năng phổ biến cho ngành IT - map to skill table
-  // Schema: skill table có SkillName (max 20 chars), Description
-  const skillsList = [
-    'JavaScript',
-    'TypeScript',
-    'React',
-    'Vue.js',
-    'Angular',
-    'Node.js',
-    'Java',
-    'Python',
-    'C#',
-    'PHP',
-    'SQL',
-    'MongoDB',
-    'PostgreSQL',
-    'MySQL',
-    'Docker',
-    'Kubernetes',
-    'AWS',
-    'Azure',
-    'Git',
-    'Figma',
-    'Adobe XD'
+  // Danh mục công việc từ bảng job_category
+  const jobCategories = [
+    { value: 'IT Software', label: 'IT Software - Phát triển phần mềm' },
+    { value: 'Data Science', label: 'Data Science - Phân tích dữ liệu' },
+    { value: 'DevOps', label: 'DevOps - Vận hành hệ thống' },
+    { value: 'Cybersecurity', label: 'Cybersecurity - An ninh mạng' },
+    { value: 'UI/UX Design', label: 'UI/UX Design - Thiết kế giao diện' },
+    { value: 'Game Development', label: 'Game Development - Phát triển game' },
+    { value: 'Mobile Development', label: 'Mobile Development - Phát triển di động' }
+  ];
+
+  // Kỹ năng từ bảng skill
+  const availableSkills = [
+    { value: 'Java', label: 'Java' },
+    { value: 'Python', label: 'Python' },
+    { value: 'JavaScript', label: 'JavaScript' },
+    { value: 'React', label: 'React' },
+    { value: 'Node.js', label: 'Node.js' },
+    { value: 'SQL', label: 'SQL' },
+    { value: 'MongoDB', label: 'MongoDB' },
+    { value: 'AWS', label: 'AWS' },
+    { value: 'Docker', label: 'Docker' },
+    { value: 'Git', label: 'Git' },
+    { value: 'Spring Boot', label: 'Spring Boot' },
+    { value: 'Angular', label: 'Angular' },
+    { value: 'Machine Learning', label: 'Machine Learning' },
+    { value: 'DevOps', label: 'DevOps' },
+    { value: 'Kubernetes', label: 'Kubernetes' }
   ];
 
   const handleInputChange = (e) => {
@@ -112,33 +109,22 @@ const PostJob = () => {
     }));
   };
 
-  const handleAddTag = (e) => {
-    if (e.key === 'Enter' && currentTag.trim()) {
-      e.preventDefault();
-      if (!formData.tags.includes(currentTag.trim())) {
-        setFormData(prev => ({
-          ...prev,
-          tags: [...prev.tags, currentTag.trim()]
-        }));
-      }
-      setCurrentTag('');
-    }
+  const handleCategoryChange = (categoryValue) => {
+    setFormData(prev => {
+      const categories = prev.categories.includes(categoryValue)
+        ? prev.categories.filter(c => c !== categoryValue)
+        : [...prev.categories, categoryValue];
+      return { ...prev, categories };
+    });
   };
 
-  const handleRemoveTag = (tagToRemove) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
-  };
-
-  const handleSkillToggle = (skill) => {
-    setFormData(prev => ({
-      ...prev,
-      skills: prev.skills.includes(skill)
-        ? prev.skills.filter(s => s !== skill)
-        : [...prev.skills, skill]
-    }));
+  const handleSkillChange = (skillValue) => {
+    setFormData(prev => {
+      const skills = prev.skills.includes(skillValue)
+        ? prev.skills.filter(s => s !== skillValue)
+        : [...prev.skills, skillValue];
+      return { ...prev, skills };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -195,19 +181,15 @@ const PostJob = () => {
     try {
       setLoading(true);
       
-      // Get employerId from localStorage
-      const employerId = localStorage.getItem('employerId') || '1'; // Default to 1 for testing
-      // TODO: Uncomment this when authentication is implemented
-      if (!employerId) {
-        setError('Vui lòng đăng nhập để đăng tin tuyển dụng!');
-        setLoading(false);
-        return;
-      }
+      // Get employerId from localStorage (bỏ validation để test)
+      const employerId = localStorage.getItem('employerId') || '5'; // Dùng employerId = 5 (employer tồn tại trong DB)
       
       // Transform data theo schema database
       // Schema: job table - JobName (max 20), JD (max 500), JobType, ContractType, Level,
       // Quantity (>=1), SalaryFrom (>0), SalaryTo (>SalaryFrom), RequiredExpYear, 
       // Location (max 30), PostDate, ExpireDate (>PostDate), JobStatus, EmployerID
+      // + categories: mảng tên danh mục (JCName từ bảng job_category)
+      // + skills: mảng tên kỹ năng (SkillName từ bảng skill)
       const jobData = {
         JobName: formData.jobTitle,
         JD: formData.jobDescription,
@@ -221,66 +203,42 @@ const PostJob = () => {
         Location: formData.city,
         PostDate: new Date().toISOString().split('T')[0],
         ExpireDate: formData.expirationDate,
-        JobStatus: 'Active',
-        NumberOfApplicant: 0,
+        JobStatus: 'Open',
         EmployerID: parseInt(employerId),
-        
-        // Relations - will be handled separately in backend
-        categories: formData.tags, // Insert into 'in' table (JobID, JCName)
-        skills: formData.skills // Insert into 'require' table (JobID, SkillName)
+        categories: formData.categories, // Danh mục đã chọn
+        skills: formData.skills // Kỹ năng đã chọn
       };
       
-      console.log('Sending job data:', jobData);
+      console.log('=== POSTING JOB ===');
+      console.log('Job data:', JSON.stringify(jobData, null, 2));
       
-      // Call API (fallback to localStorage if API not available)
-      try {
-        const response = await postJob(jobData);
-        
-        if (response.success || response.data) {
-          const newJobId = response.data?.JobID || response.jobId || Date.now();
-          
-          // Lưu job vào localStorage để có thể xem qua API/fallback
-          const savedJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
-          const newJob = {
-            ...jobData,
-            JobID: newJobId,
-            PostDate: new Date().toISOString().split('T')[0],
-            createdAt: new Date().toISOString()
-          };
-          savedJobs.push(newJob);
-          localStorage.setItem('postedJobs', JSON.stringify(savedJobs));
-          
-          // Hiển thị modal success
-          setPostedJobId(newJobId);
-          setPostedJobTitle(formData.jobTitle);
-          setShowSuccessModal(true);
-        } else {
-          setError(response.message || 'Có lỗi xảy ra khi đăng tin!');
-        }
-      } catch (apiError) {
-        // Fallback: Lưu vào localStorage khi API chưa có
-        console.log('API not available, saving to localStorage:', apiError);
-        
-        const newJobId = Date.now();
-        const savedJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
-        const newJob = {
-          ...jobData,
-          JobID: newJobId,
-          PostDate: new Date().toISOString().split('T')[0],
-          createdAt: new Date().toISOString()
-        };
-        savedJobs.push(newJob);
-        localStorage.setItem('postedJobs', JSON.stringify(savedJobs));
+      // Call backend API
+      const response = await postJob(jobData);
+      
+      if (response.success) {
+        const newJobId = response.data?.JobID;
         
         // Hiển thị modal success
         setPostedJobId(newJobId);
         setPostedJobTitle(formData.jobTitle);
         setShowSuccessModal(true);
+        
+        console.log('Job posted successfully with ID:', newJobId);
+      } else {
+        setError(response.message || 'Có lỗi xảy ra khi đăng tin!');
       }
       
     } catch (error) {
       console.error('Error posting job:', error);
-      setError(error.message || 'Không thể kết nối đến server. Vui lòng thử lại sau!');
+      
+      // Xử lý các loại lỗi khác nhau
+      if (error.message.includes('Thiếu trường bắt buộc')) {
+        setError('Vui lòng điền đầy đủ tất cả các trường bắt buộc!');
+      } else if (error.message.includes('HTTP error')) {
+        setError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!');
+      } else {
+        setError(error.message || 'Có lỗi xảy ra khi đăng tin. Vui lòng thử lại!');
+      }
     } finally {
       setLoading(false);
     }
@@ -291,7 +249,6 @@ const PostJob = () => {
     // Reset form
     setFormData({
       jobTitle: '',
-      tags: [],
       minSalary: '',
       maxSalary: '',
       contractType: '',
@@ -302,6 +259,7 @@ const PostJob = () => {
       jobLevel: '',
       city: '',
       jobDescription: '',
+      categories: [],
       skills: []
     });
   };
@@ -355,35 +313,24 @@ const PostJob = () => {
             />
             <p className="help-text">JobName tối đa 20 ký tự</p>
           </div>
+        </div>
 
-          {/* Tags - Map to job_category */}
-          <div className="form-group">
-            <label>Danh mục công việc</label>
-            <div className="tags-container">
-              <div className="tags-list">
-                {formData.tags.map((tag, index) => (
-                  <span key={index} className="tag">
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="tag-remove"
-                    >
-                      <X size={14} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <input
-                type="text"
-                value={currentTag}
-                onChange={(e) => setCurrentTag(e.target.value)}
-                onKeyPress={handleAddTag}
-                placeholder="Thêm danh mục và nhấn Enter (vd: Development, Design, Marketing)"
-              />
-            </div>
-            <p className="help-text">Ví dụ: Development, Design, Marketing, IT & Software</p>
+        {/* Categories */}
+        <div className="form-section">
+          <h3>Danh mục công việc</h3>
+          <div className="checkbox-group">
+            {jobCategories.map((category) => (
+              <label key={category.value} className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={formData.categories.includes(category.value)}
+                  onChange={() => handleCategoryChange(category.value)}
+                />
+                <span>{category.label}</span>
+              </label>
+            ))}
           </div>
+          <p className="help-text">Chọn ít nhất 1 danh mục phù hợp với công việc</p>
         </div>
 
         {/* Salary */}
@@ -527,22 +474,22 @@ const PostJob = () => {
           </div>
         </div>
 
-        {/* Job Skills */}
+        {/* Skills */}
         <div className="form-section">
           <h3>Kỹ năng yêu cầu</h3>
-          <p className="help-text">Chọn các kỹ năng cần thiết cho vị trí này</p>
-          <div className="benefits-grid">
-            {skillsList.map((skill, index) => (
-              <label key={index} className="benefit-checkbox">
+          <div className="checkbox-group">
+            {availableSkills.map((skill) => (
+              <label key={skill.value} className="checkbox-label">
                 <input
                   type="checkbox"
-                  checked={formData.skills.includes(skill)}
-                  onChange={() => handleSkillToggle(skill)}
+                  checked={formData.skills.includes(skill.value)}
+                  onChange={() => handleSkillChange(skill.value)}
                 />
-                <span>{skill}</span>
+                <span>{skill.label}</span>
               </label>
             ))}
           </div>
+          <p className="help-text">Chọn các kỹ năng cần thiết cho vị trí này</p>
         </div>
 
         {/* Job Description */}
@@ -558,7 +505,7 @@ const PostJob = () => {
               required
               maxLength={500}
             />
-            <p className="help-text">JD (Job Description) phải tối đa 500 ký tự theo schema. Hiện tại: {formData.jobDescription.length}/500</p>
+            <p className="help-text">Job Description</p>
             <div className="editor-toolbar">
               <button type="button" title="Bold"><strong>B</strong></button>
               <button type="button" title="Italic"><em>I</em></button>

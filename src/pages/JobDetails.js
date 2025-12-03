@@ -25,131 +25,32 @@ const JobDetails = () => {
       try {
         setLoading(true);
         
-        // Hardcoded data for testing (remove when backend is ready)
-        // Data structure matches actual database schema
-        const hardcodedJob = {
-          // From job table
-          JobID: 1,
-          JobName: "Senior UX Designer",
-          JD: `Velistar is a Shopify Plus agency, and we partner with brands to help them grow, we also do the same with our people!
-
-Here at Velistar, we don't just make websites, we create exceptional digital experiences that consumers love. Our team of designers, strategists, and creators work together to push brands to the next level. From Platform Migration, User Experience & User Interface Design, to Digital Marketing, we have a proven track record in delivering outstanding eCommerce solutions and driving sales for our clients.
-
-The role will involve translating project specifications into clean, test-driven, easily maintainable code. You will work with the Project and Development teams as well as with the Technical Director, adhering closely to project plans and delivering work that meets functional & non-functional requirements. You will have the opportunity to create new, innovative, secure and scalable features for our clients on the Shopify platform.`,
-          JobType: "Onsite",           // From job table
-          ContractType: "Fulltime",    // From job table
-          Level: "Entry Level",        // From job table
-          Quantity: 5,                 // From job table
-          SalaryFrom: 100000,          // From job table (INT)
-          SalaryTo: 120000,            // From job table (INT)
-          RequiredExpYear: 3,          // From job table
-          Location: "Dhaka, Bangladesh", // From job table
-          PostDate: "2024-11-14",      // From job table (DATE)
-          ExpireDate: "2024-12-14",    // From job table (DATE)
-          JobStatus: "published",      // From job table
-          NumberOfApplicant: 25,       // From job table (INT UNSIGNED)
-          EmployerID: 100,             // From job table (FK to employer)
-          
-          // From company table (joined via employer)
-          company: {
-            CompanyID: 1,
-            CName: "Facebook",                    // Actual field name in DB
-            CNationality: "USA",                  // Actual field name in DB
-            Website: "https://facebook.com",
-            Industry: "Technology",
-            CompanySize: 5000,                    // MEDIUMINT in DB
-            Logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png",
-            Description: "Leading social media platform",
-            TaxNumber: 123456789,                 // INT in DB
-            EmployerID: 100
-          },
-          
-          // From job_category table via 'in' table
-          categories: [
-            {
-              JCName: "Back-end",
-              Specialty: "Backend Development"    // Actual field name in DB
-            },
-            {
-              JCName: "PHP",
-              Specialty: "PHP Programming"
-            },
-            {
-              JCName: "Laravel",
-              Specialty: "Laravel Framework"
-            },
-            {
-              JCName: "Development",
-              Specialty: "Software Development"
-            },
-            {
-              JCName: "Front-end",
-              Specialty: "Frontend Development"
-            }
-          ],
-          
-          // From skill table via 'require' table
-          // Note: require table only has JobID and SkillName (no level or required flag)
-          requiredSkills: [
-            {
-              SkillName: "UX Design",
-              Description: "User Experience Design skills"
-            },
-            {
-              SkillName: "Figma",
-              Description: "Figma design tool"
-            },
-            {
-              SkillName: "Communication",
-              Description: "Communication skills"
-            },
-            {
-              SkillName: "Adobe XD",
-              Description: "Adobe XD tool"
-            }
-          ],
-          
-          // From user table (employer info)
-          employer: {
-            ID: 100,
-            Username: "hr_facebook",
-            Email: "hr@facebook.com",
-            FName: "John",
-            LName: "Doe",
-            PhoneNumber: "0123456789",  // CHAR(10) in DB
-            Address: "123 Tech Street, Silicon Valley",
-            Profile_Picture: "https://via.placeholder.com/100",
-            Bdate: "1990-01-01"
-          }
-        };
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Fetch job details from API
+        const jobData = await fetchJobById(jobId);
+        console.log('Job Data:', jobData); // Debug: xem cấu trúc dữ liệu
+        console.log('Company Data:', jobData.company); // Debug: xem thông tin company
+        setJob(jobData);
         
-        // Use hardcoded data
-        setJob(hardcodedJob);
-        
-        // Uncomment below when backend is ready
-        // const response = await fetchJobById(jobId);
-        // if (response.success) {
-        //   setJob(response.data);
-        // } else {
-        //   setError('Failed to load job details');
-        // }
       } catch (err) {
-        setError(err.message);
+        console.error('Error loading job details:', err);
+        setError(err.message || 'Không thể tải thông tin công việc');
       } finally {
         setLoading(false);
       }
     };
 
-    loadJobDetails();
+    if (jobId) {
+      loadJobDetails();
+    }
   }, [jobId]);
 
   if (loading) {
     return (
       <div className="job-details-container">
-        <div className="loading">Đang tải...</div>
+        <div className="loading">
+          <div className="loading-spinner"></div>
+          <p>Đang tải thông tin công việc...</p>
+        </div>
       </div>
     );
   }
@@ -157,7 +58,13 @@ The role will involve translating project specifications into clean, test-driven
   if (error) {
     return (
       <div className="job-details-container">
-        <div className="error">Lỗi: {error}</div>
+        <div className="error">
+          <h3>Không thể tải thông tin công việc</h3>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="retry-btn">
+            Thử lại
+          </button>
+        </div>
       </div>
     );
   }
@@ -165,35 +72,69 @@ The role will involve translating project specifications into clean, test-driven
   if (!job) {
     return (
       <div className="job-details-container">
-        <div className="not-found">Không tìm thấy công việc</div>
+        <div className="not-found">
+          <h3>Không tìm thấy công việc</h3>
+          <p>Công việc này có thể đã bị xóa hoặc không tồn tại.</p>
+          <button onClick={() => navigate('/find-job')} className="back-btn">
+            Quay lại tìm việc
+          </button>
+        </div>
       </div>
     );
   }
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    if (!dateString) return 'Chưa xác định';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Ngày không hợp lệ';
+      
+      return date.toLocaleDateString('vi-VN', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric' 
+      });
+    } catch (error) {
+      return 'Ngày không hợp lệ';
+    }
+  };
+
+  const isJobExpired = (expireDate) => {
+    if (!expireDate) return false;
+    const expire = new Date(expireDate);
+    const now = new Date();
+    return expire < now;
+  };
+
+  const getDaysUntilExpire = (expireDate) => {
+    if (!expireDate) return null;
+    const expire = new Date(expireDate);
+    const now = new Date();
+    const diffTime = expire - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
   const formatSalary = (salaryFrom, salaryTo) => {
-    if (!salaryFrom && !salaryTo) return 'Negotiable';
-    if (!salaryTo) return `$${salaryFrom.toLocaleString()}+`;
-    return `$${salaryFrom.toLocaleString()} - $${salaryTo.toLocaleString()}`;
+    if (!salaryFrom && !salaryTo) return 'Thương lượng';
+    if (!salaryTo) return `${salaryFrom.toLocaleString()} VND+`;
+    return `${salaryFrom.toLocaleString()} - ${salaryTo.toLocaleString()} VND`;
   };
 
   const getContractTypeLabel = (type) => {
     switch (type) {
-      case 'Fulltime': return 'Toàn thời gian';
-      case 'Parttime': return 'Bán thời gian';
+      case 'Permanent': return 'Toàn thời gian';
       case 'Contract': return 'Hợp đồng';
       case 'Internship': return 'Thực tập';
+      case 'Freelance': return 'Tự do';
       default: return type;
     }
   };
 
   const getJobTypeLabel = (type) => {
     switch (type) {
+      case 'Full-time': return 'Toàn thời gian';
+      case 'Part-time': return 'Bán thời gian';
       case 'Onsite': return 'Tại văn phòng';
       case 'Remote': return 'Từ xa';
       case 'Hybrid': return 'Kết hợp';
@@ -203,8 +144,29 @@ The role will involve translating project specifications into clean, test-driven
 
   const copyJobLink = () => {
     const url = window.location.href;
-    navigator.clipboard.writeText(url);
-    alert('Link copied to clipboard!');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Đã sao chép link vào clipboard!');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Đã sao chép link vào clipboard!');
+      });
+    } else {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Đã sao chép link vào clipboard!');
+    }
   };
 
   return (
@@ -224,16 +186,34 @@ The role will involve translating project specifications into clean, test-driven
           <div className="company-logo">
             <img 
               src={job.company?.Logo || 'https://via.placeholder.com/100'} 
-              alt={job.company?.CName || 'Company'} 
+              alt={job.company?.CName || 'Company Logo'} 
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/100';
+              }}
             />
           </div>
           <div className="job-header-info">
-            <h1 className="job-title">{job.JobName}</h1>
-            <p className="company-name">at {job.company?.CName || 'Company'}</p>
+            <h1 className="job-title">{job.JobName || 'Tên công việc'}</h1>
+            <p className="company-name">tại {job.company?.CName || 'Công ty'}</p>
             <div className="job-badges">
-              <span className={`badge badge-${job.ContractType?.toLowerCase()}`}>
+              <span className={`badge badge-${job.ContractType?.toLowerCase() || 'default'}`}>
                 {getContractTypeLabel(job.ContractType)}
               </span>
+              {job.JobType && (
+                <span className={`badge badge-${job.JobType?.toLowerCase()}`}>
+                  {getJobTypeLabel(job.JobType)}
+                </span>
+              )}
+              {isJobExpired(job.ExpireDate) && (
+                <span className="badge badge-expired">
+                  Đã hết hạn
+                </span>
+              )}
+              {job.JobStatus === 'Close' && (
+                <span className="badge badge-closed">
+                  Đã đóng
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -241,8 +221,16 @@ The role will involve translating project specifications into clean, test-driven
           <button className="btn-bookmark">
             <i className="icon-bookmark"></i>
           </button>
-          <button className="btn-apply" onClick={() => navigate(`/jobs/${jobId}/apply`)}>
-            Ứng tuyển ngay
+          <button 
+            className={`btn-apply ${(isJobExpired(job.ExpireDate) || job.JobStatus === 'Close') ? 'disabled' : ''}`}
+            onClick={() => {
+              if (!isJobExpired(job.ExpireDate) && job.JobStatus !== 'Close') {
+                navigate(`/jobs/${jobId}/apply`);
+              }
+            }}
+            disabled={isJobExpired(job.ExpireDate) || job.JobStatus === 'Close'}
+          >
+            {isJobExpired(job.ExpireDate) || job.JobStatus === 'Close' ? 'Không thể ứng tuyển' : 'Ứng tuyển ngay'}
             <i className="icon-arrow-right"></i>
           </button>
         </div>
@@ -255,7 +243,7 @@ The role will involve translating project specifications into clean, test-driven
           <section className="job-section">
             <h2 className="section-title">Mô tả công việc</h2>
             <div className="job-description">
-              {job.JD}
+              {job.JD || 'Chưa có mô tả công việc.'}
             </div>
           </section>
 
@@ -306,6 +294,58 @@ The role will involve translating project specifications into clean, test-driven
               </div>
             </section>
           )}
+
+          {/* Company Information */}
+          {job.company && (
+            <section className="job-section">
+              <h2 className="section-title">Thông tin công ty</h2>
+              <div className="company-info">
+                <div className="company-detail">
+                  <strong>Tên công ty:</strong>
+                  <div className="company-detail-value">{job.company.CName || job.company.CompanyName || 'Chưa cập nhật'}</div>
+                </div>
+                {job.company.Industry && (
+                  <div className="company-detail">
+                    <strong>Ngành nghề:</strong>
+                    <div className="company-detail-value">{job.company.Industry}</div>
+                  </div>
+                )}
+                {job.company.CompanySize && (
+                  <div className="company-detail">
+                    <strong>Quy mô:</strong>
+                    <div className="company-detail-value">{job.company.CompanySize} nhân viên</div>
+                  </div>
+                )}
+                {job.company.CNationality && (
+                  <div className="company-detail">
+                    <strong>Quốc tịch:</strong>
+                    <div className="company-detail-value">{job.company.CNationality}</div>
+                  </div>
+                )}
+                {job.company.Website && (
+                  <div className="company-detail">
+                    <strong>Website:</strong>
+                    <div className="company-detail-value">
+                      <a 
+                        href={job.company.Website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="company-website"
+                      >
+                        {job.company.Website}
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {job.company.Description && (
+                  <div className="company-detail">
+                    <strong>Mô tả:</strong>
+                    <div className="company-detail-value">{job.company.Description}</div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Right Column - Job Overview */}
@@ -317,9 +357,9 @@ The role will involve translating project specifications into clean, test-driven
                 <DollarSign size={24} />
               </div>
               <div className="info-content">
-                <div className="info-label">Mức lương (USD)</div>
+                <div className="info-label">Mức lương (VND)</div>
                 <div className="info-value">{formatSalary(job.SalaryFrom, job.SalaryTo)}</div>
-                <div className="info-sublabel">Lương theo năm</div>
+                <div className="info-sublabel">Lương theo tháng</div>
               </div>
             </div>
             <div className="info-card">
@@ -328,7 +368,7 @@ The role will involve translating project specifications into clean, test-driven
               </div>
               <div className="info-content">
                 <div className="info-label">Địa điểm làm việc</div>
-                <div className="info-value">{job.Location}</div>
+                <div className="info-value">{job.Location || 'Chưa xác định'}</div>
               </div>
             </div>
             <div className="info-card">
@@ -337,7 +377,7 @@ The role will involve translating project specifications into clean, test-driven
       </div>
               <div className="info-content">
                 <div className="info-label">Hình thức làm việc</div>
-                <div className="info-value">{getJobTypeLabel(job.JobType)}</div>
+                <div className="info-value">{getJobTypeLabel(job.JobType) || 'Chưa xác định'}</div>
               </div>
             </div>
           </div>
@@ -361,7 +401,24 @@ The role will involve translating project specifications into clean, test-driven
         </div>
                 <div className="overview-content">
                   <div className="overview-label">HẠN NỘP:</div>
-                  <div className="overview-value">{formatDate(job.ExpireDate)}</div>
+                  <div className="overview-value">
+                    {formatDate(job.ExpireDate)}
+                    {(() => {
+                      const daysLeft = getDaysUntilExpire(job.ExpireDate);
+                      if (daysLeft !== null) {
+                        if (daysLeft < 0) {
+                          return <span className="expired-text"> (Đã hết hạn)</span>;
+                        } else if (daysLeft === 0) {
+                          return <span className="urgent-text"> (Hết hạn hôm nay)</span>;
+                        } else if (daysLeft <= 3) {
+                          return <span className="urgent-text"> (Còn {daysLeft} ngày)</span>;
+                        } else {
+                          return <span className="normal-text"> (Còn {daysLeft} ngày)</span>;
+                        }
+                      }
+                      return null;
+                    })()}
+                  </div>
                 </div>
               </div>
               <div className="overview-item">
@@ -370,7 +427,7 @@ The role will involve translating project specifications into clean, test-driven
         </div>
                 <div className="overview-content">
                   <div className="overview-label">CẤP BẬC:</div>
-                  <div className="overview-value">{job.Level}</div>
+                  <div className="overview-value">{job.Level || 'Chưa xác định'}</div>
                 </div>
               </div>
               <div className="overview-item">
@@ -378,8 +435,8 @@ The role will involve translating project specifications into clean, test-driven
           <FileText size={20} />
         </div>
                 <div className="overview-content">
-                  <div className="overview-label">KINH NGHIỆM</div>
-                  <div className="overview-value">{job.RequireExpYear} Năm</div>
+                  <div className="overview-label">KINH NGHIỆM:</div>
+                  <div className="overview-value">{job.RequiredExpYear || 0} Năm</div>
                 </div>
               </div>
               <div className="overview-item">
@@ -387,8 +444,17 @@ The role will involve translating project specifications into clean, test-driven
           <GraduationCap size={20} />
         </div>
                 <div className="overview-content">
-                  <div className="overview-label">HỌC VẤN</div>
-                  <div className="overview-value">Tốt nghiệp</div>
+                  <div className="overview-label">SỐ LƯỢNG TUYỂN:</div>
+                  <div className="overview-value">{job.Quantity || 1} người</div>
+                </div>
+              </div>
+              <div className="overview-item">
+                <div className="overview-icon">
+          <BarChart3 size={20} />
+        </div>
+                <div className="overview-content">
+                  <div className="overview-label">ỨNG VIÊN ĐÃ NỘP:</div>
+                  <div className="overview-value">{job.NumberOfApplicant || 0} người</div>
                 </div>
               </div>
             </div>
