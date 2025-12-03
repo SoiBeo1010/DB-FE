@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, MapPin, DollarSign, Calendar, Eye, Trash2, Edit, Users } from 'lucide-react';
+import { getEmployerJobs, deleteJob as deleteJobAPI } from '../services/employerService';
 import EmployerLayout from '../components/EmployerLayout';
 import '../styles/MyJob.css';
 
@@ -9,59 +10,65 @@ const MyJob = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all'); // all, active, expired
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadJobs();
   }, []);
 
-  const loadJobs = () => {
+  const loadJobs = async () => {
     setLoading(true);
+    setError(null);
     try {
-      // Get current employer ID
-      const currentEmployerId = parseInt(localStorage.getItem('employerId') || '1');
+      // Get current employer ID (default to 5 for testing)
+      const currentEmployerId = localStorage.getItem('employerId') || '5';
       
-      // Load jobs from localStorage
-      const allJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
+      console.log('Loading jobs for employer:', currentEmployerId);
       
-      console.log('All jobs:', allJobs);
-      console.log('Current employer ID:', currentEmployerId);
-      
-      // Filter jobs by current employer only
-      const employerJobs = allJobs.filter(job => {
-        console.log(`Job ${job.JobID} - EmployerID: ${job.EmployerID} (type: ${typeof job.EmployerID})`);
-        return Number(job.EmployerID) === Number(currentEmployerId);
+      // Call API to get jobs from backend
+      const response = await getEmployerJobs(currentEmployerId, {
+        page: 1,
+        limit: 100, // Get all jobs
+        status: 'all'
       });
       
-      console.log('Filtered employer jobs:', employerJobs);
+      console.log('API Response:', response);
       
-      setJobs(employerJobs);
+      if (response.success) {
+        const jobsData = response.data?.jobs || [];
+        console.log('Jobs loaded:', jobsData);
+        setJobs(jobsData);
+      } else {
+        throw new Error(response.message || 'Failed to load jobs');
+      }
     } catch (error) {
       console.error('Error loading jobs:', error);
+      setError(error.message || 'Không thể tải danh sách tin đăng');
+      setJobs([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteJob = (jobId) => {
+  const handleDeleteJob = async (jobId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa tin tuyển dụng này?')) {
-      // Get current employer ID
-      const currentEmployerId = parseInt(localStorage.getItem('employerId') || '1');
-      
-      // Load all jobs
-      const allJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
-      
-      // Remove only the job that belongs to current employer
-      const updatedJobs = allJobs.filter(job => 
-        !(job.JobID === jobId && Number(job.EmployerID) === Number(currentEmployerId))
-      );
-      
-      localStorage.setItem('postedJobs', JSON.stringify(updatedJobs));
-      
-      // Update local state
-      const updatedEmployerJobs = jobs.filter(job => job.JobID !== jobId);
-      setJobs(updatedEmployerJobs);
-      
-      alert('Đã xóa tin tuyển dụng thành công!');
+      try {
+        // Call API to delete job
+        const response = await deleteJobAPI(jobId);
+        
+        if (response.success) {
+          // Update local state after successful deletion
+          const updatedEmployerJobs = jobs.filter(job => job.JobID !== jobId);
+          setJobs(updatedEmployerJobs);
+          
+          alert('Đã xóa tin tuyển dụng thành công!');
+        } else {
+          throw new Error(response.message || 'Không thể xóa tin tuyển dụng');
+        }
+      } catch (error) {
+        console.error('Error deleting job:', error);
+        alert('Lỗi: ' + (error.message || 'Không thể xóa tin tuyển dụng'));
+      }
     }
   };
 
@@ -94,14 +101,25 @@ const MyJob = () => {
   // Check if job is expired
   const isJobExpired = (expireDate) => {
     if (!expireDate) return false;
-    return new Date(expireDate) < new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to midnight for date comparison
+    const expire = new Date(expireDate);
+    expire.setHours(0, 0, 0, 0);
+    return expire < today;
+  };
+
+  // Check if job is active (not expired and status is Open/Active)
+  const isJobActive = (job) => {
+    const notExpired = !isJobExpired(job.ExpireDate);
+    const statusOpen = job.JobStatus === 'Open' || job.JobStatus === 'Active';
+    return notExpired && statusOpen;
   };
 
   // Filter jobs based on active tab
   const filteredJobs = jobs.filter(job => {
     if (activeTab === 'all') return true;
-    if (activeTab === 'active') return !isJobExpired(job.ExpireDate) && job.JobStatus === 'Active';
-    if (activeTab === 'expired') return isJobExpired(job.ExpireDate) || job.JobStatus === 'Đã đóng';
+    if (activeTab === 'active') return isJobActive(job);
+    if (activeTab === 'expired') return !isJobActive(job);
     return true;
   });
 
@@ -130,13 +148,13 @@ const MyJob = () => {
           className={`tab ${activeTab === 'active' ? 'active' : ''}`}
           onClick={() => setActiveTab('active')}
         >
-          Đang hoạt động ({jobs.filter(j => !isJobExpired(j.ExpireDate) && j.JobStatus === 'Active').length})
+          Đang hoạt động ({jobs.filter(j => isJobActive(j)).length})
         </button>
         <button 
           className={`tab ${activeTab === 'expired' ? 'active' : ''}`}
           onClick={() => setActiveTab('expired')}
         >
-          Đã hết hạn ({jobs.filter(j => isJobExpired(j.ExpireDate) || j.JobStatus === 'Đã đóng').length})
+          Đã hết hạn ({jobs.filter(j => !isJobActive(j)).length})
         </button>
       </div>
 
@@ -158,7 +176,7 @@ const MyJob = () => {
           </div>
         ) : (
           filteredJobs.map(job => (
-            <div key={job.JobID} className={`job-card ${isJobExpired(job.ExpireDate) ? 'expired' : ''}`}>
+            <div key={job.JobID} className={`job-card ${!isJobActive(job) ? 'expired' : ''}`}>
               <div className="job-card-header">
                 <div className="job-title-section">
                   <h3 className="job-title">{job.JobName}</h3>
@@ -189,8 +207,11 @@ const MyJob = () => {
                      job.ContractType === 'Internship' ? 'Thực tập' : 
                      job.ContractType === 'Freelance' ? 'Tự do' : job.ContractType}
                   </span>
-                  {isJobExpired(job.ExpireDate) && (
-                    <span className="badge expired-badge">Đã hết hạn</span>
+                  {!isJobActive(job) && (
+                    <span className="badge expired-badge">
+                      {isJobExpired(job.ExpireDate) ? 'Đã hết hạn' : 
+                       (job.JobStatus === 'Closed' || job.JobStatus === 'Đã đóng') ? 'Đã đóng' : 'Không hoạt động'}
+                    </span>
                   )}
                 </div>
               </div>

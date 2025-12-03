@@ -2,16 +2,23 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 // Fetch jobs với các filter options
-// Schema: job table có các trường: JobID, JobName, JD, JobType, ContractType, Level, 
-// Quantity, SalaryFrom, SalaryTo, RequiredExpYear, Location, PostDate, ExpireDate, 
-// JobStatus, NumberOfApplicant, EmployerID
+// Backend response: { success: true, data: { jobs, pagination }, message }
+// Jobs format: { JobID, JobName, CompanyName, CompanyLogo, Location, ContractType, JobType, Level, SalaryFrom, SalaryTo, ... }
 export const fetchJobs = async (params = {}) => {
   try {
-    const queryParams = new URLSearchParams({
-      page: params.page || 1,
-      limit: params.limit || 12,
-      ...params
-    });
+    const queryParams = new URLSearchParams();
+    
+    // Add pagination
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    
+    // Add search and filters
+    if (params.search) queryParams.append('search', params.search);
+    if (params.location) queryParams.append('location', params.location);
+    if (params.jobType) queryParams.append('jobType', params.jobType);
+    if (params.contractType) queryParams.append('contractType', params.contractType);
+    if (params.level) queryParams.append('level', params.level);
+    if (params.sortBy) queryParams.append('sortBy', params.sortBy);
 
     const response = await fetch(`${API_BASE_URL}/jobs?${queryParams}`, {
       method: 'GET',
@@ -24,8 +31,14 @@ export const fetchJobs = async (params = {}) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    
+    // Backend returns: { success: true, data: { jobs, pagination }, message }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    
+    throw new Error('Invalid response format from server');
   } catch (error) {
     console.error('Error fetching jobs:', error);
     throw error;
@@ -33,6 +46,7 @@ export const fetchJobs = async (params = {}) => {
 };
 
 // Fetch job details by ID
+// Backend response: Full job details with company info, categories, and required skills
 export const fetchJobById = async (jobId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
@@ -46,8 +60,14 @@ export const fetchJobById = async (jobId) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    
+    // Backend returns: { success: true, data: {...jobDetails}, message }
+    if (result.success && result.data) {
+      return result.data;
+    }
+    
+    throw new Error('Invalid response format from server');
   } catch (error) {
     console.error('Error fetching job details:', error);
     throw error;
@@ -55,10 +75,10 @@ export const fetchJobById = async (jobId) => {
 };
 
 // Apply for a job
-// Schema: apply table có các trường: CandidateID, JobID, upLoadCV, CoverLetter, Status_apply
+// Backend expects: { CandidateID, JobID, upLoadCV, CoverLetter, Status_apply }
 export const applyForJob = async (jobId, applicationData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/apply`, {
+    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/apply`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -67,10 +87,8 @@ export const applyForJob = async (jobId, applicationData) => {
       },
       body: JSON.stringify({
         CandidateID: applicationData.candidateId,
-        JobID: jobId,
         upLoadCV: applicationData.cvPath,
         CoverLetter: applicationData.coverLetter || null,
-        Status_apply: 'Dang duyet' // Default status
       }),
     });
 
@@ -78,8 +96,8 @@ export const applyForJob = async (jobId, applicationData) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    return result;
   } catch (error) {
     console.error('Error applying for job:', error);
     throw error;
@@ -87,30 +105,25 @@ export const applyForJob = async (jobId, applicationData) => {
 };
 
 // Bookmark/Save job (favorite table in schema)
-// Schema: favourite table có các trường: CandidateID, JobID, Date
-export const toggleBookmark = async (jobId, candidateId, isBookmarked) => {
+// Backend endpoints: POST /jobs/:jobId/favorite and DELETE /jobs/:jobId/favorite
+export const toggleBookmark = async (jobId, isBookmarked) => {
   try {
     const method = isBookmarked ? 'DELETE' : 'POST';
-    const response = await fetch(`${API_BASE_URL}/favourite`, {
+    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/favorite`, {
       method,
       headers: {
         'Content-Type': 'application/json',
         // Add authorization header if needed
         // 'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        CandidateID: candidateId,
-        JobID: jobId,
-        Date: new Date().toISOString().split('T')[0]
-      }),
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    return result;
   } catch (error) {
     console.error('Error toggling bookmark:', error);
     throw error;
