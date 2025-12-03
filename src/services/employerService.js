@@ -1,6 +1,6 @@
 // Employer API Service - Aligned with Database Schema
 // Schema tables: employer, job, company, package, follow, apply, notification
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Get authentication token from localStorage or context
 const getAuthToken = () => {
@@ -40,7 +40,7 @@ export const getEmployerJobs = async (employerId, params = {}) => {
     const queryParams = new URLSearchParams({
       page: params.page || 1,
       limit: params.limit || 10,
-      status: params.status || 'all', // 'Active', 'Đã đóng', 'all'
+      status: params.status || 'all', // 'Open', 'Closed', 'all'
       ...params
     });
 
@@ -132,6 +132,13 @@ export const getSavedCandidates = async (employerId, params = {}) => {
 // Relations: job_category (in table), skill (require table)
 export const postJob = async (jobData) => {
   try {
+    console.log('=== POST JOB DEBUG ===');
+    console.log('API URL:', `${API_BASE_URL}/jobs`);
+    console.log('Job data:', JSON.stringify(jobData, null, 2));
+    console.log('Categories:', jobData.categories);
+    console.log('Skills:', jobData.skills);
+    console.log('EmployerID:', jobData.EmployerID);
+    
     const response = await fetch(`${API_BASE_URL}/jobs`, {
       method: 'POST',
       headers: {
@@ -141,20 +148,26 @@ export const postJob = async (jobData) => {
       body: JSON.stringify(jobData),
     });
 
+    console.log('Response status:', response.status);
+    
+    const data = await response.json();
+    console.log('Response data:', data);
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Lấy thông báo lỗi từ response
+      const errorMessage = data.message || data.error || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error posting job:', error);
+    console.error('❌ Error posting job:', error);
     throw error;
   }
 };
 
 // Update job status (mark as expired, activate, etc.)
-// Schema: JobStatus in job table (varchar 10)
+// Schema: JobStatus in job table (varchar 10) - Valid values: 'Open', 'Closed'
 export const updateJobStatus = async (jobId, status) => {
   try {
     const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/status`, {
@@ -163,7 +176,7 @@ export const updateJobStatus = async (jobId, status) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getAuthToken()}`
       },
-      body: JSON.stringify({ JobStatus: status }), // e.g., 'Active', 'Đã đóng'
+      body: JSON.stringify({ JobStatus: status }), // e.g., 'Open', 'Closed'
     });
 
     if (!response.ok) {
