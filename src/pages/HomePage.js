@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, MapPin, Briefcase, Building2, Users, FileText,
-  Upload, Target, CheckCircle, Code, Layout, Server, 
+  Upload, Target, CheckCircle, Code, Layout, Server,
   Smartphone, GitBranch, Bug, Palette, Cpu
 } from 'lucide-react';
 import '../styles/HomePage.css';
@@ -23,10 +23,12 @@ const Homepage = () => {
   const [stats, setStats] = useState([]);
   const [topCompanies, setTopCompanies] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [featuredJobs, setFeaturedJobs] = useState([]);
   const [loading, setLoading] = useState({
     stats: true,
     categories: true,
     companies: true,
+    featuredJobs: true,
   });
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -34,27 +36,13 @@ const Homepage = () => {
   // ========== FETCH STATS ==========
   useEffect(() => {
     const fetchStats = async () => {
-      console.log('🔄 Fetching stats from:', `${API_BASE_URL}/stats`);
-      
       try {
         const response = await fetch(`${API_BASE_URL}/stats`);
-        console.log('📊 Stats response status:', response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Stats API error:', errorText);
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch stats');
         const data = await response.json();
-        console.log('✅ Stats data received:', data);
         setStats(data);
-        
       } catch (error) {
-        console.error('❌ Error fetching stats:', error.message);
-        console.error('Stack:', error.stack);
-        
-        // Fallback data
+        console.error('Error fetching stats:', error);
         setStats([
           { icon: 'briefcase', number: '175,324', label: 'Live Job' },
           { icon: 'building', number: '97,354', label: 'Companies' },
@@ -71,26 +59,13 @@ const Homepage = () => {
   // ========== FETCH CATEGORIES ==========
   useEffect(() => {
     const fetchCategories = async () => {
-      console.log('🔄 Fetching categories from:', `${API_BASE_URL}/categories`);
-      
       try {
         const response = await fetch(`${API_BASE_URL}/categories`);
-        console.log('📂 Categories response status:', response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Categories API error:', errorText);
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch categories');
         const data = await response.json();
-        console.log('✅ Categories data received:', data);
         setCategories(data);
-        
       } catch (error) {
-        console.error('❌ Error fetching categories:', error.message);
-        
-        // Fallback data
+        console.error('Error fetching categories:', error);
         setCategories([
           { id: 1, icon: 'code', name: 'Software Engineering', openPositions: 35241 },
           { id: 2, icon: 'layout', name: 'Frontend Developer', openPositions: 18273 },
@@ -111,68 +86,45 @@ const Homepage = () => {
   // ========== FETCH TOP COMPANIES ==========
   useEffect(() => {
     const fetchTopCompanies = async () => {
-      console.log('🔄 Fetching companies from:', `${API_BASE_URL}/companies/top?limit=6`);
-      
       try {
         const response = await fetch(`${API_BASE_URL}/companies/top?limit=6`);
-        console.log('🏢 Companies response status:', response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Companies API error:', errorText);
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch companies');
         const data = await response.json();
-        console.log('✅ Companies data received:', data);
-        
-        // Validate response format
         const companiesData = Array.isArray(data) ? data : (data.data || []);
-        
-        if (!Array.isArray(companiesData) || companiesData.length === 0) {
-          console.warn('⚠️ No companies data, using fallback');
-          throw new Error('Invalid or empty response');
-        }
 
-        // Sort by rating and mark top 3 as featured
         const sorted = [...companiesData].sort((a, b) => (b.rating || 0) - (a.rating || 0));
         const finalCompanies = sorted.map((company, index) => ({
           ...company,
           featured: index < 3,
           openPositions: company.openPositions || 0
         }));
-
-        console.log('✅ Final companies:', finalCompanies);
         setTopCompanies(finalCompanies);
-        
       } catch (error) {
-        console.error('❌ Error fetching companies:', error.message);
-        
-        // Fallback data
+        console.error('Error fetching companies:', error);
         setTopCompanies([
-          { 
-            CompanyID: 1, 
-            CompanyName: "FPT Software", 
-            Logo: "https://cdn.topcv.vn/100/company_logos/fpt-software-6159c8f08d0a8.jpg", 
-            CompanySize: "25,000+ employees", 
-            Website: "https://fpt-software.com", 
-            Description: "Công ty công nghệ hàng đầu Việt Nam", 
-            Industry: "Information Technology", 
-            CNationality: "Vietnam", 
-            openPositions: 428, 
+          {
+            CompanyID: 1,
+            CompanyName: "FPT Software",
+            Logo: "https://cdn.topcv.vn/100/company_logos/fpt-software-6159c8f08d0a8.jpg",
+            CompanySize: "25,000+ employees",
+            Website: "https://fpt-software.com",
+            Description: "Công ty công nghệ hàng đầu Việt Nam",
+            Industry: "Information Technology",
+            CNationality: "Vietnam",
+            openPositions: 428,
             rating: 4.5,
             featured: true
           },
-          { 
-            CompanyID: 2, 
-            CompanyName: "VNG Corporation", 
-            Logo: "https://cdn.topcv.vn/100/company_logos/vng-corporation-614e5f5e8d0a8.jpg", 
-            CompanySize: "3,000 - 5,000 employees", 
-            Website: "https://vng.com.vn", 
-            Description: "Zalo • Zing • Cloud • Game", 
-            Industry: "Internet", 
-            CNationality: "Vietnam", 
-            openPositions: 312, 
+          {
+            CompanyID: 2,
+            CompanyName: "VNG Corporation",
+            Logo: "https://cdn.topcv.vn/100/company_logos/vng-corporation-614e5f5e8d0a8.jpg",
+            CompanySize: "3,000 - 5,000 employees",
+            Website: "https://vng.com.vn",
+            Description: "Zalo • Zing • Cloud • Game",
+            Industry: "Internet",
+            CNationality: "Vietnam",
+            openPositions: 312,
             rating: 4.2,
             featured: true
           }
@@ -182,6 +134,63 @@ const Homepage = () => {
       }
     };
     fetchTopCompanies();
+  }, [API_BASE_URL]);
+
+  // ========== FETCH FEATURED JOBS ==========
+  useEffect(() => {
+    const fetchFeaturedJobs = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/jobs?limit=6&sortBy=newest`);
+        if (!response.ok) throw new Error('Failed to fetch featured jobs');
+        const result = await response.json();
+
+        if (result.success && result.data && result.data.jobs) {
+          setFeaturedJobs(result.data.jobs);
+        } else {
+          throw new Error('Invalid data format');
+        }
+      } catch (error) {
+        console.error('Error fetching featured jobs:', error);
+        setFeaturedJobs([
+          {
+            JobID: 1,
+            JobName: "Senior Frontend Developer (ReactJS)",
+            CompanyName: "Techcombank",
+            CompanyLogo: "https://cdn.topcv.vn/100/company_logos/techcombank-6159c8f08d0a8.jpg",
+            Location: "Hà Nội",
+            SalaryFrom: 20000000,
+            SalaryTo: 40000000,
+            JobType: "Fulltime",
+            categories: [{ JCName: "IT Software" }]
+          },
+          {
+            JobID: 2,
+            JobName: "Backend Engineer (NodeJS/Go)",
+            CompanyName: "MoMo",
+            CompanyLogo: "https://developers.momo.vn/v3/img/logo.svg",
+            Location: "TP.HCM",
+            SalaryFrom: 25000000,
+            SalaryTo: 50000000,
+            JobType: "Hybrid",
+            categories: [{ JCName: "Backend" }]
+          },
+          {
+            JobID: 3,
+            JobName: "DevOps Engineer",
+            CompanyName: "VNG",
+            CompanyLogo: "https://cdn.topcv.vn/100/company_logos/vng-corporation-614e5f5e8d0a8.jpg",
+            Location: "TP.HCM",
+            SalaryFrom: 30000000,
+            SalaryTo: 60000000,
+            JobType: "Onsite",
+            categories: [{ JCName: "DevOps" }]
+          }
+        ]);
+      } finally {
+        setLoading(prev => ({ ...prev, featuredJobs: false }));
+      }
+    };
+    fetchFeaturedJobs();
   }, [API_BASE_URL]);
 
   // Icon Mapping 
@@ -331,6 +340,67 @@ const Homepage = () => {
                   <div className="category-info">
                     <h3>{cat.name}</h3>
                     <p>{cat.openPositions || cat.jobCount || 0} Open positions</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Featured Jobs */}
+      <section className="featured-jobs">
+        <div className="container">
+          <div className="section-header">
+            <h2>Việc làm nổi bật</h2>
+            <a href="/find-job" className="view-all-link">Xem tất cả →</a>
+          </div>
+
+          {loading.featuredJobs ? (
+            <div className="featured-jobs-grid">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="featured-job-card skeleton">
+                  <div className="f-job-logo skeleton"></div>
+                  <div className="f-job-info">
+                    <h3 className="skeleton-line"></h3>
+                    <p className="skeleton-line small"></p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="featured-jobs-grid">
+              {featuredJobs.map((job) => (
+                <div key={job.JobID || job.id} className="featured-job-card" onClick={() => navigate(`/jobs/${job.JobID || job.id}`)}>
+                  <div className="f-job-header">
+                    <img
+                      src={job.CompanyLogo || job.logo || 'https://via.placeholder.com/60'}
+                      alt={job.CompanyName}
+                      className="f-job-logo"
+                      onError={(e) => e.target.src = 'https://via.placeholder.com/60'}
+                    />
+                    <span className={`job-type-badge ${job.JobType?.toLowerCase()}`}>{job.JobType}</span>
+                  </div>
+
+                  <div className="f-job-body">
+                    <h3 className="f-job-title">{job.JobName}</h3>
+                    <p className="f-job-company">{job.CompanyName}</p>
+
+                    <div className="f-job-meta">
+                      <span className="meta-item">
+                        <MapPin size={14} /> {job.Location}
+                      </span>
+                      <span className="meta-item salary">
+                        <Briefcase size={14} />
+                        {job.SalaryTo ? `${(job.SalaryFrom / 1000000).toFixed(0)}-${(job.SalaryTo / 1000000).toFixed(0)} triệu` : 'Thỏa thuận'}
+                      </span>
+                    </div>
+
+                    <div className="f-job-tags">
+                      {(job.categories || []).slice(0, 2).map((cat, idx) => (
+                        <span key={idx} className="f-tag">{cat.JCName}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
