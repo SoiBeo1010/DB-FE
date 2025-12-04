@@ -135,3 +135,115 @@
 .navbar__login_employer-btn:hover {
   background: #bddcfc;
   color:#444;}
+
+
+/* User Section */
+.navbar__user {
+  position: relative;
+  margin-left: 20px;
+}
+
+.navbar__user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navbar__user-info:hover {
+  background: #e9ecef;
+}
+
+.navbar__user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #0A65CC;
+}
+
+.navbar__user-name {
+  font-weight: 500;
+  color: #18191C;
+  font-size: 14px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dropdown Menu */
+.navbar__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  z-index: 1000;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navbar__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #5E6670;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.navbar__dropdown-item:hover {
+  background: #f8f9fa;
+  color: #0A65CC;
+}
+
+.navbar__dropdown-divider {
+  height: 1px;
+  background: #e9ecef;
+  margin: 8px 0;
+}
+
+.navbar__dropdown-logout {
+  color: #E05151;
+}
+
+.navbar__dropdown-logout:hover {
+  background: #FEE;
+  color: #C33;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar__user-name {
+    display: none;
+  }
+  
+  .navbar__user-info {
+    padding: 8px;
+  }
+}

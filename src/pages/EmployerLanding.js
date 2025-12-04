@@ -1,59 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Users, TrendingUp, Target,CheckCircle2,Clock, Search, CheckCircle, ArrowRight, Star, Award, BarChart3 } from 'lucide-react';
+import { Building2, Users, TrendingUp, Target, CheckCircle2, Clock, Search, CheckCircle, ArrowRight, Star, Award, BarChart3 } from 'lucide-react';
 import '../styles/EmployerLanding.css';
-import {Link} from 'react-router-dom';
-import '../utils/scroll.ts'
+import { Link } from 'react-router-dom';
+import '../utils/scroll.ts';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 export default function EmployerLandingPage() {
- 
   const [email, setEmail] = useState('');
-
-  const [stats, setStats] = useState([
-    { icon: Users, number: '...', label: 'Ứng viên IT' },
-    { icon: Building2, number: '...', label: 'Công ty' },
-    { icon: CheckCircle2, number: '...', label: 'Việc làm thành công' },
-    { icon: Clock, number: '...', label: 'Thời gian tuyển dụng TB' },]
-  );
+  const [stats, setStats] = useState({
+    candidates: '250,000+',
+    companies: '12,500+',
+    successfulHires: '45,000+',
+    avgTime: '14 ngày'
+  });
   const [loadingStats, setLoadingStats] = useState(true);
-   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/stats`);
-        if (!response.ok) throw new Error('Failed to fetch stats');
-        
-        const data = await response.json();
-        
-        // Map data từ API
-        setStats({
-          candidates: data.find(s => s.label === 'Candidates')?.number || '250,000+',
-          companies: data.find(s => s.label.includes('Compan'))?.number || '12,500+',
-          successfulHires: data.find(s => s.label.includes('Successfull Hires'))?.number || '45,000+',
-          avgTime: '14 ngày'
-        });
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-        // Giữ nguyên fallback stats nếu fetch thất bại
-      } finally {
-        setLoadingStats(false);
-      }
-    };
 
+  useEffect(() => {
     fetchStats();
   }, []);
 
+  const fetchStats = async () => {
+    console.log('🚀 Fetching employer landing stats...');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/stats`);
+      
+      console.log('📡 Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch stats');
+      }
+      
+      const data = await response.json();
+      console.log('📦 Stats data:', data);
+      
+      // Map data từ API với fallback
+      const mappedStats = {
+        candidates: data.find(s => s.label === 'Candidates')?.number || '250,000+',
+        companies: data.find(s => s.label?.includes('Compan'))?.number || '12,500+',
+        successfulHires: data.find(s => s.label?.includes('Successfull Hires') || s.label?.includes('Successful Hires'))?.number || '45,000+',
+        avgTime: '14 ngày'
+      };
+      
+      console.log('✅ Mapped stats:', mappedStats);
+      setStats(mappedStats);
+      
+    } catch (error) {
+      console.error('❌ Error fetching stats:', error);
+      // Giữ nguyên fallback stats nếu fetch thất bại
+      console.log('⚠️ Using fallback stats');
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   const handleGetStarted = () => {
     if (email) {
-      console.log('Email:', email);
-      window.location.href = '/employer/register?email=' + email;
+      console.log('📧 Email:', email);
+      window.location.href = '/register-employer?email=' + encodeURIComponent(email);
+    } else {
+      window.location.href = '/register-employer';
     }
   };
 
   return (
     <div className="min-h-screen bg-white">
-      
-      
-  {/* Hero Section */}
+      {/* Hero Section */}
       <section className="hero-section">
         <div className="container">
           <div className="hero-grid">
@@ -63,7 +76,7 @@ export default function EmployerLandingPage() {
                 <span className="highlight">nhanh chóng & hiệu quả</span>
               </h1>
               <p className="hero-description">
-                Kết nối với hơn 250,000 ứng viên IT chất lượng cao. Đăng tin tuyển dụng miễn phí và nhận hồ sơ từ những developer giỏi nhất Việt Nam.
+                Kết nối với hơn {stats.candidates} ứng viên IT chất lượng cao. Đăng tin tuyển dụng miễn phí và nhận hồ sơ từ những developer giỏi nhất Việt Nam.
               </p>
               <div className="hero-cta">
                 <input
@@ -87,7 +100,7 @@ export default function EmployerLandingPage() {
                     <Users size={32} />
                   </div>
                   <div className="stats-info">
-                    <div className="stats-number">250,000+</div>
+                    <div className="stats-number">{loadingStats ? '...' : stats.candidates}</div>
                     <div className="stats-label">Ứng viên IT</div>
                   </div>
                 </div>
@@ -116,19 +129,19 @@ export default function EmployerLandingPage() {
         <div className="container">
           <div className="stats-grid">
             <div className="stat-item">
-              <div className="stat-number">250,000+</div>
+              <div className="stat-number">{loadingStats ? '...' : stats.candidates}</div>
               <div className="stat-label">Ứng viên IT</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">12,500+</div>
+              <div className="stat-number">{loadingStats ? '...' : stats.companies}</div>
               <div className="stat-label">Công ty</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">45,000+</div>
+              <div className="stat-number">{loadingStats ? '...' : stats.successfulHires}</div>
               <div className="stat-label">Việc làm thành công</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">14 ngày</div>
+              <div className="stat-number">{stats.avgTime}</div>
               <div className="stat-label">Thời gian tuyển dụng TB</div>
             </div>
           </div>
@@ -225,7 +238,9 @@ export default function EmployerLandingPage() {
                   <span>Trang công ty cơ bản</span>
                 </li>
               </ul>
-              <button className="btn-pricing">Bắt đầu miễn phí</button>
+              <Link to="/register-employer">
+                <button className="btn-pricing">Bắt đầu miễn phí</button>
+              </Link>
             </div>
 
             {/* Standard Plan */}
@@ -254,7 +269,9 @@ export default function EmployerLandingPage() {
                   <span>Thống kê chi tiết</span>
                 </li>
               </ul>
-              <button className="btn-pricing primary">Chọn gói này</button>
+              <Link to="/register-employer">
+                <button className="btn-pricing primary">Chọn gói này</button>
+              </Link>
             </div>
 
             {/* Premium Plan */}
@@ -282,7 +299,9 @@ export default function EmployerLandingPage() {
                   <span>Account Manager riêng</span>
                 </li>
               </ul>
-              <button className="btn-pricing">Liên hệ tư vấn</button>
+              <Link to="/register-employer">
+                <button className="btn-pricing">Liên hệ tư vấn</button>
+              </Link>
             </div>
           </div>
         </div>
@@ -295,14 +314,13 @@ export default function EmployerLandingPage() {
             <h2>Sẵn sàng tìm kiếm nhân tài?</h2>
             <p>Hàng ngàn công ty đã tin tưởng ITviec. Đến lượt bạn!</p>
             <Link to="/register-employer">
-  <button className="btn-cta">
-    Đăng tin miễn phí ngay <ArrowRight size={24} className="ml-2" />
-  </button>
-</Link>
+              <button className="btn-cta">
+                Đăng tin miễn phí ngay <ArrowRight size={24} className="ml-2" />
+              </button>
+            </Link>
           </div>
         </div>
       </section>
-      
     </div>
   );
 }

@@ -57,10 +57,10 @@ const CandidateNoti = () => {
   //     console.log('⚠️ Chưa đăng nhập, chuyển về trang đăng nhập');
   //     navigate('/signin');
   //     return;
-  // //   }
+    // //   }
 
-  //   fetchNotifications();
-  // }, [pagination.currentPage]);
+    //   fetchNotifications();
+    // }, [pagination.currentPage]);
 
   const fetchNotifications = async () => {
     setLoading(true);
