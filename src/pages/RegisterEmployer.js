@@ -102,7 +102,7 @@ const RegisterEmployer = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/auth/register-employer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

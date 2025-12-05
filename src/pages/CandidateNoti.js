@@ -50,6 +50,17 @@ const CandidateNoti = () => {
     totalNotifications: 0
   });
 
+  useEffect(() => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      console.log('⚠️ Chưa đăng nhập, chuyển về trang đăng nhập');
+      navigate('/signin');
+      return;
+    }
+
+    fetchNotifications();
+  }, [pagination.currentPage]);
+
   // useEffect(() => {
   //   // Kiểm tra đăng nhập
   //   const token = localStorage.getItem('token') || sessionStorage.getItem('token');

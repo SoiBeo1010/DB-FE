@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { User, LogOut, Settings, Briefcase } from "lucide-react";
 import "./Navbar.css";
 import logo from "../assets/logo.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -21,29 +22,32 @@ const Navbar = () => {
         console.log('👤 User logged in:', userData);
       } catch (err) {
         console.error('❌ Error parsing user data:', err);
+        setUser(null);
       }
+    } else {
+      setUser(null);
     }
-  }, []);
+  }, [location]);
 
   const handleLogout = () => {
     console.log('👋 Logging out...');
-    
+
     // Clear storage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('user');
-    
+
     // Reset state
     setUser(null);
     setShowDropdown(false);
-    
+
     // Redirect to home
     navigate('/');
   };
 
   const getDashboardLink = () => {
-    if (!user) return '/employer-dashboard';
+    if (!user) return '/signin';
     return user.role === 'candidate' ? '/candidate-dashboard' : '/employer-dashboard';
   };
 
@@ -63,7 +67,7 @@ const Navbar = () => {
           <span className="viec-black">viec</span>
         </Link>
       </div>
-      
+
       <ul className="navbar__menu">
         <li><Link to="/">Trang chủ</Link></li>
         <li><Link to="/find-job">Tìm việc làm</Link></li>
@@ -74,34 +78,34 @@ const Navbar = () => {
       {user ? (
         // User đã đăng nhập
         <div className="navbar__user">
-          <div 
+          <div
             className="navbar__user-info"
             onClick={() => setShowDropdown(!showDropdown)}
           >
-            <img 
-              src={getAvatarUrl(user)} 
+            <img
+              src={getAvatarUrl(user)}
               alt={user.fullName || user.username}
               className="navbar__user-avatar"
             />
             <span className="navbar__user-name">{user.fullName || user.username}</span>
-            <svg 
-              width="12" 
-              height="12" 
-              viewBox="0 0 12 12" 
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
               fill="currentColor"
-              style={{ 
+              style={{
                 marginLeft: '8px',
                 transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.2s'
               }}
             >
-              <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none"/>
+              <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="2" fill="none" />
             </svg>
           </div>
 
           {showDropdown && (
             <div className="navbar__dropdown">
-              <Link 
+              <Link
                 to={user.role === 'candidate' ? '/candidate-dashboard' : '/employer-dashboard'}
                 className="navbar__dropdown-item"
                 onClick={() => setShowDropdown(false)}
@@ -109,8 +113,8 @@ const Navbar = () => {
                 <Briefcase size={16} />
                 Dashboard
               </Link>
-              <Link 
-                to={user.role === 'candidate' ? '/candidate-dashboard/setting' : '/employer-dashboard/setting'}
+              <Link
+                to={user.role === 'candidate' ? '/candidate-dashboard/setting' : '/employer-dashboard'}
                 className="navbar__dropdown-item"
                 onClick={() => setShowDropdown(false)}
               >
@@ -118,7 +122,7 @@ const Navbar = () => {
                 Cài đặt
               </Link>
               <div className="navbar__dropdown-divider"></div>
-              <button 
+              <button
                 className="navbar__dropdown-item navbar__dropdown-logout"
                 onClick={handleLogout}
               >

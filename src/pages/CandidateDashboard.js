@@ -28,19 +28,19 @@ export default function CandidateDashboard() {
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-  // useEffect(() => {
-  //   // Kiểm tra xem user đã đăng nhập chưa
-  //   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-  //   const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+  useEffect(() => {
+    // Kiểm tra xem user đã đăng nhập chưa
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
 
-  //   if (!token || !userStr) {
-  //     console.log('⚠️ Chưa đăng nhập, chuyển về trang đăng nhập');
-  //     navigate('/signin');
-  //     return;
-  //   }
+    if (!token || !userStr) {
+      console.log('⚠️ Chưa đăng nhập, chuyển về trang đăng nhập');
+      navigate('/signin');
+      return;
+    }
 
-  //   fetchDashboardData();
-  // }, []);
+    fetchDashboardData();
+  }, []);
 
   const fetchDashboardData = async () => {
     setLoading(true);

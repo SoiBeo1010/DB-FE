@@ -1,5 +1,5 @@
 // Job API Service - Aligned with Database Schema
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Fetch jobs với các filter options
 // Backend response: { success: true, data: { jobs, pagination }, message }
@@ -134,7 +134,7 @@ export const toggleBookmark = async (jobId, isBookmarked) => {
 // Schema: job_category table có các trường: JCName, Specialty
 export const fetchJobCategories = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/job-categories`, {
+    const response = await fetch(`${API_BASE_URL}/categories`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -153,8 +153,7 @@ export const fetchJobCategories = async () => {
   }
 };
 
-// Get skills list
-// Schema: skill table có các trường: SkillName, Description
+// Get skills list (backend chưa có endpoint riêng, fallback mảng rỗng)
 export const fetchSkills = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/skills`, {
@@ -165,13 +164,14 @@ export const fetchSkills = async () => {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Fallback nếu 404 hoặc chưa triển khai
+      return [];
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error fetching skills:', error);
-    throw error;
+    return [];
   }
 };

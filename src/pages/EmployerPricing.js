@@ -65,7 +65,7 @@ export default function PricingPlans() {
   const [billingCycle, setBillingCycle] = useState('month');
   const [processingPayment, setProcessingPayment] = useState(false);
   
-  const API_BASE_URL = 'http://localhost:5000/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchPlans();
@@ -74,12 +74,12 @@ export default function PricingPlans() {
   const fetchPlans = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/pricing-plans`);
-      
+      const response = await fetch(`${API_BASE_URL}/packages`);
       if (!response.ok) throw new Error('Failed to fetch plans');
-      
+
       const data = await response.json();
-      setPlans(data.plans || FALLBACK_PLANS);
+      const normalizedPlans = data?.data || data?.plans || FALLBACK_PLANS;
+      setPlans(normalizedPlans);
     } catch (error) {
       console.error('Error fetching plans:', error);
       setPlans(FALLBACK_PLANS);
