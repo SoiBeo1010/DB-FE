@@ -74,11 +74,19 @@ const SignInEmployer = () => {
 
       if (data.success && data.data) {
         const { token, user } = data.data;
+        
+        console.log('🔐 [SignInEmployer] Login response:', data);
+        console.log('👤 [SignInEmployer] User object from backend:', user);
+        console.log('📋 [SignInEmployer] User fields:', Object.keys(user));
+        console.log('🔑 [SignInEmployer] user.employerId:', user.employerId);
+        console.log('🔑 [SignInEmployer] user.id:', user.id);
 
         // Store token and user info
         const storage = rememberMe ? localStorage : sessionStorage;
         storage.setItem('token', token);
         storage.setItem('user', JSON.stringify(user));
+        
+        console.log('✅ [SignInEmployer] Saved to storage:', storage === localStorage ? 'localStorage' : 'sessionStorage');
 
         navigate('/employer-dashboard');
       } else {

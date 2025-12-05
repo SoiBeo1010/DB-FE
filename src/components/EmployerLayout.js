@@ -71,8 +71,8 @@ const EmployerLayout = ({ children }) => {
               <span>Tin đã đăng</span>
             </Link>
             <Link 
-              to="/employer/candidates" 
-              className={`menu-item ${isActive('/employer/candidates')}`}
+              to="/employer/watch-candidate" 
+              className={`menu-item ${isActive('/employer/watch-candidate')}`}
             >
               <Bookmark size={18} />
               <span>Ứng viên</span>
