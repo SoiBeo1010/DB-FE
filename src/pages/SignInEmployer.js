@@ -27,7 +27,7 @@ const SignInEmployer = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/employer-stats`);
+        const res = await fetch(`${API_BASE_URL}/stats`);
         if (!res.ok) throw new Error();
         const data = await res.json();
         setStats(data);
@@ -53,7 +53,7 @@ const SignInEmployer = () => {
     setError('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login-employer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ const SignInEmployer = () => {
         storage.setItem('token', token);
         storage.setItem('user', JSON.stringify(user));
 
-        navigate('/employer/dashboard');
+        navigate('/employer-dashboard');
       } else {
         throw new Error('Dữ liệu trả về không hợp lệ');
       }

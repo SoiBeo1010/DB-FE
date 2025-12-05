@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   ChevronRight,
   Users,
@@ -12,59 +12,91 @@ import {
   Briefcase
 } from 'lucide-react';
 import EmployerLayout from '../components/EmployerLayout';
-// TODO: Uncomment when API is ready
-// import { 
-//   getEmployerStats, 
-//   getEmployerJobs,
-//   updateJobStatus 
-// } from '../services/employerService';
+import { 
+  getEmployerStats, 
+  getEmployerJobs,
+  updateJobStatus 
+} from '../services/employerService';
 import '../styles/EmployerDashboard.css';
 
 const EmployerDashboard = () => {
+  const navigate = useNavigate();
   const [showJobActions, setShowJobActions] = useState(null);
-  const [loading, setLoading] = useState(false); // Set to false to show hardcoded data
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Get employerId from localStorage or context (you should implement proper auth)
-  const employerId = parseInt(localStorage.getItem('employerId') || '1'); // Default for testing
-
-  // Load jobs from localStorage (same as MyJob)
+  const [employerId, setEmployerId] = useState(null);
   const [recentJobs, setRecentJobs] = useState([]);
 
-  useEffect(() => {
-    loadEmployerJobs();
-  }, []);
-
-  const loadEmployerJobs = () => {
-    try {
-      // Load all jobs from localStorage
-      const allJobs = JSON.parse(localStorage.getItem('postedJobs') || '[]');
-      
-      // Filter jobs by current employer and get last 5
-      const employerJobs = allJobs
-        .filter(job => Number(job.EmployerID) === Number(employerId))
-        .sort((a, b) => new Date(b.createdAt || b.PostDate) - new Date(a.createdAt || a.PostDate))
-        .slice(0, 5);
-      
-      setRecentJobs(employerJobs);
-      
-      // Update stats
-      const activeJobs = employerJobs.filter(job => job.JobStatus === 'Active').length;
-      setStats(prev => ({
-        ...prev,
-        NumberOfOpenedJob: activeJobs
-      }));
-    } catch (error) {
-      console.error('Error loading employer jobs:', error);
-    }
-  };
-
-  // Hardcoded data - replace with API when ready
-  // Schema: employer table có NumberOfOpenedJob, follow table cho savedCandidates
   const [stats, setStats] = useState({
     NumberOfOpenedJob: 0,
-    totalFollowers: 2517
+    totalFollowers: 0
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (!token || !userStr) {
+      navigate('/signin-employer');
+      return;
+    }
+    const user = JSON.parse(userStr);
+    if (user.role !== 'employer') {
+      navigate('/signin-employer');
+      return;
+    }
+    const id = user.employerId || user.id;
+    setEmployerId(id);
+    fetchDashboardData(id);
+  }, []);
+
+  const fetchDashboardData = async (id) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [statsData, jobsData] = await Promise.all([
+        getEmployerStats(id),
+        getEmployerJobs(id, { limit: 5 })
+      ]);
+
+      setStats({
+        NumberOfOpenedJob: statsData?.NumberOfOpenedJob || statsData?.openJobs || 0,
+        totalFollowers: statsData?.totalFollowers || statsData?.savedCandidates || 0
+      });
+
+      const jobs = jobsData?.data?.jobs || jobsData?.jobs || [];
+      const transformedJobs = jobs.map((job) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const expireDate = job.ExpireDate ? new Date(job.ExpireDate) : null;
+        const daysRemaining = expireDate
+          ? Math.max(0, Math.ceil((expireDate - today) / (1000 * 60 * 60 * 24)))
+          : 0;
+        const status = job.JobStatus || 'Active';
+        return {
+          JobID: job.JobID,
+          JobName: job.JobName,
+          JobType: job.JobType,
+          ContractType: job.ContractType,
+          daysRemaining,
+          JobStatus: status,
+          NumberOfApplicant: job.NumberOfApplicant || 0,
+          ExpireDate: expireDate ? expireDate.toLocaleDateString('vi-VN') : 'N/A',
+          PostDate: job.PostDate,
+          Location: job.Location,
+          SalaryFrom: job.SalaryFrom,
+          SalaryTo: job.SalaryTo,
+        };
+      });
+      setRecentJobs(transformedJobs);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
+      setRecentJobs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // TODO: Uncomment when API is ready
   // Fetch dashboard data on component mount
@@ -121,48 +153,16 @@ const EmployerDashboard = () => {
   //   fetchDashboardData();
   // }, [employerId]);
 
-  // TODO: Uncomment when API is ready
   const handleMarkAsExpired = async (jobId) => {
-    // Hardcoded version - update local state only
-    const updatedJobs = recentJobs.map(job => 
-      job.JobID === jobId ? { ...job, JobStatus: 'Đã đóng', daysRemaining: 0 } : job
-    );
-    setRecentJobs(updatedJobs);
-    setShowJobActions(null);
-    alert('Đã đánh dấu tin tuyển dụng hết hạn (chỉ cập nhật local)');
-
-    // API version - uncomment when ready
-    // try {
-    //   await updateJobStatus(jobId, 'Đã đóng');
-    //   // Refresh jobs list
-    //   const jobsData = await getEmployerJobs(employerId, { limit: 5 });
-    //   const transformedJobs = jobsData.jobs?.map(job => {
-    //     const today = new Date();
-    //     const expireDate = new Date(job.ExpireDate);
-    //     const daysRemaining = Math.ceil((expireDate - today) / (1000 * 60 * 60 * 24));
-    //     const isExpired = job.JobStatus === 'Đã đóng' || daysRemaining < 0;
-
-    //     return {
-    //       JobID: job.JobID,
-    //       JobName: job.JobName,
-    //       JobType: job.JobType,
-    //       ContractType: job.ContractType,
-    //       daysRemaining: daysRemaining > 0 ? daysRemaining : 0,
-    //       JobStatus: isExpired ? 'Đã đóng' : 'Active',
-    //       NumberOfApplicant: job.NumberOfApplicant || 0,
-    //       ExpireDate: isExpired ? new Date(job.ExpireDate).toLocaleDateString('vi-VN') : null,
-    //       PostDate: new Date(job.PostDate).toLocaleDateString('vi-VN'),
-    //       Location: job.Location,
-    //       SalaryFrom: job.SalaryFrom,
-    //       SalaryTo: job.SalaryTo
-    //     };
-    //   }) || [];
-    //   setRecentJobs(transformedJobs);
-    //   setShowJobActions(null);
-    // } catch (err) {
-    //   console.error('Error updating job status:', err);
-    //   alert('Không thể cập nhật trạng thái tin tuyển dụng');
-    // }
+    if (!employerId) return;
+    try {
+      await updateJobStatus(jobId, 'Closed');
+      await fetchDashboardData(employerId);
+      setShowJobActions(null);
+    } catch (err) {
+      console.error('Error updating job status:', err);
+      alert('Không thể cập nhật trạng thái tin tuyển dụng');
+    }
   };
 
   const toggleJobActions = (jobId) => {
@@ -236,8 +236,8 @@ const EmployerDashboard = () => {
                     </p>
                   </div>
                   <div className="col-status">
-                    <span className={`status-badge ${job.JobStatus === 'Active' ? 'active' : 'expired'}`}>
-                      {job.JobStatus === 'Active' ? (
+                    <span className={`status-badge ${job.JobStatus === 'Open' ? 'active' : 'expired'}`}>
+                      {job.JobStatus === 'Open' ? (
                         <><CheckCircle2 size={14} /> Đang hoạt động</>
                       ) : (
                         <><XCircle size={14} /> Hết hạn</>

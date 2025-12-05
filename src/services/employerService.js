@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api
 
 // Get authentication token from localStorage or context
 const getAuthToken = () => {
-  return localStorage.getItem('authToken') || '';
+  return localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('authToken') || '';
 };
 
 // Get employer dashboard statistics
@@ -311,7 +311,7 @@ export const updateCompanyInfo = async (companyId, companyData) => {
 // Get employer's package information
 export const getPackageInfo = async (packageName) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/package/${packageName}`, {
+    const response = await fetch(`${API_BASE_URL}/packages`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -324,6 +324,9 @@ export const getPackageInfo = async (packageName) => {
     }
 
     const data = await response.json();
+    if (packageName && Array.isArray(data?.data)) {
+      return data.data.find((pkg) => pkg.PackageName === packageName) || null;
+    }
     return data;
   } catch (error) {
     console.error('Error fetching package info:', error);
@@ -361,16 +364,12 @@ export const updateApplicationStatus = async (candidateId, jobId, status) => {
 export const toggleFollowCandidate = async (employerId, candidateId, isFollowing) => {
   try {
     const method = isFollowing ? 'DELETE' : 'POST';
-    const response = await fetch(`${API_BASE_URL}/follow`, {
+    const response = await fetch(`${API_BASE_URL}/employer/${employerId}/follow/${candidateId}`, {
       method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getAuthToken()}`
       },
-      body: method === 'POST' ? JSON.stringify({
-        CandidateID: candidateId,
-        EmployerID: employerId
-      }) : null,
     });
 
     if (!response.ok) {
@@ -396,7 +395,7 @@ export const getNotifications = async (employerId, params = {}) => {
       ...params
     });
 
-    const response = await fetch(`${API_BASE_URL}/notifications/employer/${employerId}?${queryParams}`, {
+    const response = await fetch(`${API_BASE_URL}/employer/${employerId}/notifications?${queryParams}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

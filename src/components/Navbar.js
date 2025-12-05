@@ -110,7 +110,7 @@ const Navbar = () => {
                 Dashboard
               </Link>
               <Link 
-                to={user.role === 'candidate' ? '/candidate-dashboard/setting' : '/employer-dashboard/setting'}
+                to={user.role === 'candidate' ? '/candidate-dashboard/setting' : '/employer-dashboard'}
                 className="navbar__dropdown-item"
                 onClick={() => setShowDropdown(false)}
               >

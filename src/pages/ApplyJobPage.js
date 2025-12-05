@@ -24,85 +24,67 @@ const ApplyJobPage = () => {
   const [savedResumes, setSavedResumes] = useState([]);
   const [useTextEditor, setUseTextEditor] = useState(true);
   
-  // Mock candidate ID - Replace with actual user authentication
-  const candidateId = 1; // This should come from auth context
-  
-  const API_BASE_URL = 'http://localhost:3001/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   // Fetch job details
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
         setLoading(true);
-        
-        // Mock data - Replace with actual API call
-        const mockJobData = {
-          JobID: jobId,
-          JobName: "Senior UX Designer",
-          CompanyName: "Instagram",
-          CompanyLogo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/1024px-Instagram_logo_2022.svg.png",
-          ContractType: "Fulltime",
-          Location: "New York, USA",
-          SalaryFrom: 80000,
-          SalaryTo: 120000,
-          PostDate: "2024-07-14",
-          ExpireDate: "2021-06-30",
-          Level: "Entry Level",
-          RequiredExpYear: 3,
-          JobType: "Trực tiếp",
-          company: {
-            CName: "Instagram",
-            Industry: "Social networking service",
-            CompanySize: 5000,
-            CNationality: "USA",
-            Logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/1024px-Instagram_logo_2022.svg.png"
-          }
-        };
-        
-        setJobDetails(mockJobData);
-        
-        // Uncomment when API is ready
-        // const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
-        // const data = await response.json();
-        // setJobDetails(data);
-        
+        const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
+        if (!response.ok) {
+          throw new Error('Không thể tải thông tin công việc');
+        }
+        const result = await response.json();
+        const data = result.data || result;
+        setJobDetails(data);
       } catch (error) {
         console.error('Error fetching job details:', error);
+        setJobDetails(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchJobDetails();
-  }, [jobId]);
+  }, [jobId, API_BASE_URL]);
 
   // Fetch candidate's saved resumes
   useEffect(() => {
     const fetchSavedResumes = async () => {
       try {
-        // Mock saved resumes - Replace with actual API call
-        // Note: Schema limitation - profile table only has 'savedCv' field for ONE CV
-        // For multiple CVs, backend needs to implement separate CV storage or use profile.savedCv as primary
-        const mockResumes = [
-          { id: 1, name: 'cv_1_ux.pdf' }, // Simplified to fit VARCHAR(50)
-          { id: 2, name: 'cv_1_marketing.pdf' },
-          { id: 3, name: 'cv_1_dev.pdf' }
-        ];
-        
-        setSavedResumes(mockResumes);
-        
-        // Uncomment when API is ready
-        // const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}/resumes`);
-        // const data = await response.json();
-        // setSavedResumes(data);
-        
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+        if (!token || !userStr) return;
+        const user = JSON.parse(userStr);
+        const candidateId = user.candidateId || user.id;
+
+        const response = await fetch(`${API_BASE_URL}/candidate/resumes?candidateId=${candidateId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Không thể tải CV đã lưu');
+        }
+
+        const data = await response.json();
+        const resumes = data?.data || data || [];
+        const normalized = Array.isArray(resumes)
+          ? resumes.map((item, idx) => ({ id: item.id || idx + 1, name: item.name || item }))
+          : [];
+        setSavedResumes(normalized);
       } catch (error) {
         console.error('Error fetching saved resumes:', error);
+        setSavedResumes([]);
       }
     };
 
     fetchSavedResumes();
-  }, [candidateId]);
+  }, [API_BASE_URL]);
 
   // Handle file upload
   const handleFileUpload = (event) => {
@@ -138,43 +120,46 @@ const ApplyJobPage = () => {
       return;
     }
 
+    // Lấy token & candidateId
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (!token || !userStr) {
+      alert('Vui lòng đăng nhập trước khi ứng tuyển');
+      navigate('/signin');
+      return;
+    }
+    const user = JSON.parse(userStr);
+    const candidateId = user.candidateId || user.id;
+
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('CandidateID', candidateId);
-      formData.append('JobID', jobId);
-      formData.append('CoverLetter', coverLetter);
-      
-      if (uploadedCV) {
-        formData.append('upLoadCV', uploadedCV);
-      } else {
-        formData.append('upLoadCV', selectedResume);
+      const payload = {
+        CandidateID: candidateId,
+        CoverLetter: coverLetter || null,
+        upLoadCV: uploadedCV ? uploadedCV.name : selectedResume,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/apply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || 'Không thể gửi đơn ứng tuyển');
       }
 
-      // API call to submit application
-      // const response = await fetch(`${API_BASE_URL}/apply`, {
-      //   method: 'POST',
-      //   body: formData
-      // });
-
-      // if (response.ok) {
-      //   alert('Ứng tuyển thành công!');
-      //   navigate(`/jobs/${jobId}`);
-      // } else {
-      //   throw new Error('Failed to submit application');
-      // }
-
-      // Mock success response
-      setTimeout(() => {
-        setLoading(false);
-        alert('Ứng tuyển thành công!');
-        navigate(`/jobs/${jobId}`);
-      }, 1000);
-
+      alert('Ứng tuyển thành công!');
+      navigate(`/jobs/${jobId}`);
     } catch (error) {
       console.error('Error submitting application:', error);
-      alert('Có lỗi xảy ra khi ứng tuyển. Vui lòng thử lại!');
+      alert(error.message || 'Có lỗi xảy ra khi ứng tuyển. Vui lòng thử lại!');
+    } finally {
       setLoading(false);
     }
   };

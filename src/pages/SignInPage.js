@@ -51,7 +51,7 @@ const SignIn = () => {
     console.log('🚀 Bắt đầu đăng nhập với:', { email, rememberMe });
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login-candidate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,11 +73,10 @@ const SignIn = () => {
       }
 
       if (data.success && data.data) {
-        const { token, user, role } = data.data;
+        const { token, user } = data.data;
         
         console.log('✅ Đăng nhập thành công!');
         console.log('👤 User:', user);
-        console.log('🎭 Role:', role);
 
         // Lưu token
         if (rememberMe) {
@@ -90,17 +89,9 @@ const SignIn = () => {
           console.log('💾 Đã lưu token vào sessionStorage');
         }
 
-        // Điều hướng dựa trên role
-        if (role === 'candidate' || user.role === 'candidate') {
-          console.log('🔄 Chuyển đến dashboard candidate...');
-          navigate('/candidate/dashboard');
-        } else if (role === 'employer' || user.role === 'employer') {
-          console.log('🔄 Chuyển đến dashboard employer...');
-          navigate('/employer/dashboard');
-        } else {
-          console.log('🔄 Chuyển đến trang chủ...');
-          navigate('/');
-        }
+        // Điều hướng đến candidate dashboard
+        console.log('🔄 Chuyển đến dashboard candidate...');
+        navigate('/candidate-dashboard');
       } else {
         throw new Error('Dữ liệu trả về không hợp lệ');
       }
